@@ -26,7 +26,8 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
     statusCode = simplifiedError.statusCode;
     message = simplifiedError.message;
     errorMessages = simplifiedError.errorMessages;
-  } else if (error.name === 'TokenExpiredError') {
+  } 
+  else if (error.name === 'TokenExpiredError') {
     statusCode = StatusCodes.UNAUTHORIZED;
     message = 'Session Expired';
     errorMessages = error?.message
@@ -34,7 +35,20 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
           {
             path: '',
             message:
-              'Your session has expired. Please log in again to continue.',
+              'Your token has expired. Please reset / log in again to continue.',
+          },
+        ]
+      : [];
+  } 
+  else if (error.name === 'JsonWebTokenError') {
+    statusCode = StatusCodes.UNAUTHORIZED;
+    message = 'Invalid token';
+    errorMessages = error?.message
+      ? [
+          {
+            path: '',
+            message:
+              'Your token is not valid. Please try again.',
           },
         ]
       : [];

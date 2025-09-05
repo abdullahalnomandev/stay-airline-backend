@@ -9,7 +9,7 @@ import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 
-const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
+const createUserToDB = async (payload: Partial<IUser>): Promise<{message:string}> => {
   //set role
   payload.role = USER_ROLES.USER;
   const createUser = await User.create(payload);
@@ -37,7 +37,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
     { $set: { authentication } }
   );
 
-  return createUser;
+  return {message:"User created successfully"};
 };
 
 const getUserProfileFromDB = async (

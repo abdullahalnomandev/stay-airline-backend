@@ -14,7 +14,6 @@ const createUser = catchAsync(
       success: true,
       statusCode: StatusCodes.OK,
       message: 'User created successfully',
-      data: result,
     });
   }
 );
@@ -67,7 +66,6 @@ const createNewUser = catchAsync(
       success: true,
       statusCode: StatusCodes.OK,
       message: 'User Created successfully',
-      data: result,
     });
   }
 );

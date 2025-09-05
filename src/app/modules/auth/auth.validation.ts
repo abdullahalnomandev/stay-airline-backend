@@ -26,12 +26,8 @@ const createResetPasswordZodSchema = z.object({
     confirmPassword: z.string({
       required_error: 'Confirm Password is required',
     }),
-  }).refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
   }),
 });
-
 const createChangePasswordZodSchema = z.object({
   body: z.object({
     currentPassword: z.string({
@@ -44,10 +40,17 @@ const createChangePasswordZodSchema = z.object({
   }),
 });
 
+const createResendOtpZodSchema = z.object({
+  body: z.object({
+    email: z.string({ required_error: 'Email is required' }),
+  }),
+});
+
 export const AuthValidation = {
   createVerifyEmailZodSchema,
   createForgetPasswordZodSchema,
   createLoginZodSchema,
   createResetPasswordZodSchema,
   createChangePasswordZodSchema,
+  createResendOtpZodSchema,
 };

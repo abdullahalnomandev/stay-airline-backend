@@ -24,7 +24,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
     success: true,
     statusCode: StatusCodes.OK,
     message: 'User logged in successfully.',
-    data: result.createToken,
+    data: { token: result.createToken },
   });
 });
 
@@ -35,16 +35,14 @@ const forgetPassword = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message:
-      'Please check your email. We have sent you a one-time passcode (OTP).',
+    message: 'Please check your email. We have sent you a password reset link.',
     data: result,
   });
 });
 
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
-  const token = req.headers.authorization;
   const { ...resetData } = req.body;
-  const result = await AuthService.resetPasswordToDB(token!, resetData);
+  const result = await AuthService.resetPasswordToDB(resetData);
 
   sendResponse(res, {
     success: true,
@@ -66,10 +64,22 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const resendOtp = catchAsync(async (req: Request, res: Response) => {
+  const email = req.body.email;
+  await AuthService.resendOtpToDB(email);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Otp resend successfully',
+  });
+});
+
 export const AuthController = {
   verifyEmail,
   loginUser,
   forgetPassword,
   resetPassword,
   changePassword,
+  resendOtp,
 };
