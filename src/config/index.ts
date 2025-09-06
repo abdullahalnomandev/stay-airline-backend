@@ -9,6 +9,10 @@ export default {
   port: process.env.PORT,
   bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
   frontend_url: process.env.FRONTEND_URL,
+  stripe: {
+    public_key: process.env.STRIPE_PUBLIC_KEY,
+    secret_key: process.env.STRIPE_SECREAT_KEY,
+  },
   jwt: {
     jwt_secret: process.env.JWT_SECRET,
     jwt_expire_in: process.env.JWT_EXPIRE_IN,

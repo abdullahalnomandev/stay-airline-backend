@@ -1,8 +1,10 @@
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { USER_ROLES } from '../../../enums/user';
+import { IairlinePersonVerification } from '../airlinePersonVerification/airlineVerification.interface';
 
 export type IUser = {
   name: string;
+  airlinePersonVerification?:Types.ObjectId | IairlinePersonVerification;
   role: USER_ROLES;
   contact: string;
   email: string;

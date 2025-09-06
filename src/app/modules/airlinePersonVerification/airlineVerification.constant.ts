@@ -1,0 +1,2 @@
+export const airlinePersonVerificationSearchableFields = ['userId', 'designation', 'employeeId', 'status'];
+export const airlinePersonVerificationFilterableFields = ['userId', 'designation', 'employeeId', 'status'];

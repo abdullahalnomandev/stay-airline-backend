@@ -3,6 +3,7 @@ import { z } from 'zod';
 const createUserZodSchema = z.object({
   image: z.string({ required_error: 'Government issued certificate is required' }),
   name: z.string({ required_error: 'Name is required' }),
+  airlinePersonVerification: z.string().optional(),
   contact: z.string({ required_error: 'Contact is required' }),
   email: z.string({ required_error: 'Email is required' }),
   password: z.string({ required_error: 'Password is required' }),
