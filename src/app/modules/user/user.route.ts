@@ -8,8 +8,10 @@ import { UserValidation } from './user.validation';
 const router = express.Router();
 
 router
-  .route('/profile')
-  .get(auth(USER_ROLES.ADMIN, USER_ROLES.HOST), UserController.getUserProfile)
+  .route('/me')
+  .get(
+    auth(USER_ROLES.ADMIN, USER_ROLES.HOST,USER_ROLES.SUPER_ADMIN,USER_ROLES.GUEST),
+    UserController.getUserProfile)
   .patch(
     auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.HOST),
     fileUploadHandler(),

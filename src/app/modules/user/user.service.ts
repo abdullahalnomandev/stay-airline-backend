@@ -9,7 +9,6 @@ import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 import QueryBuilder from '../../builder/QueryBuilder';
-import { Query } from 'mongoose';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<{ message: string }> => {
   //set role
@@ -43,10 +42,9 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<{ message: strin
 };
 
 const getUserProfileFromDB = async (
-  user: JwtPayload
+  userId: string
 ): Promise<Partial<IUser>> => {
-  const { id } = user;
-  const isExistUser = await User.isExistUserById(id);
+  const isExistUser = await User.isExistUserById(userId);
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
@@ -65,7 +63,7 @@ const updateProfileToDB = async (
   }
 
   //unlink file here
-  if (payload.image) {
+  if (payload.images) {
     unlinkFile(isExistUser.image);
   }
 
