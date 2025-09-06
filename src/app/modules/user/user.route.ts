@@ -5,6 +5,8 @@ import fileUploadHandler from '../../middlewares/fileUploadHandler';
 import validateRequest from '../../middlewares/validateRequest';
 import { UserController } from './user.controller';
 import { UserValidation } from './user.validation';
+import upLoadFileHander from './user.utils';
+import upload from './user.utils';
 const router = express.Router();
 
 router
@@ -43,5 +45,10 @@ router
       return UserController.createNewUser(req, res, next);
     }
   );
+
+  router.post('/upload/file', upload.single('file'), (req,res) => {
+
+    console.log(req.files)
+  })
 
 export const UserRoutes = router;

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../../shared/catchAsync';
-import { getSingleFilePath } from '../../../shared/getFilePath';
+import { getMultipleFilesPath, getSingleFilePath } from '../../../shared/getFilePath';
 import sendResponse from '../../../shared/sendResponse';
 import { UserService } from './user.service';
 
@@ -54,7 +54,6 @@ const updateProfile = catchAsync(
 //update profile
 const createNewUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.files)
     let image = getSingleFilePath(req.files, 'image');
     const data = {
       image,
@@ -66,6 +65,7 @@ const createNewUser = catchAsync(
       success: true,
       statusCode: StatusCodes.OK,
       message: 'User Created successfully',
+      data: result,
     });
   }
 );
