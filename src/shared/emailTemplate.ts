@@ -1,7 +1,6 @@
 import config from '../config';
 import { ICreateAccount, IResetPassword } from '../types/emailTamplate';
-// const logoImage = 'https://airport-airbnb-website.vercel.app/airbnb-logo.png';
-const logoImage = `${config.frontend_url}/airbnb-logo.png`;
+const logoImage = 'https://airport-airbnb-website.vercel.app/airbnb-logo.png';
 
 const createAccount = (values: ICreateAccount) => {
   const data = {

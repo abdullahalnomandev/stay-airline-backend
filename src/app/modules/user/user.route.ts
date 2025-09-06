@@ -5,8 +5,6 @@ import fileUploadHandler from '../../middlewares/fileUploadHandler';
 import validateRequest from '../../middlewares/validateRequest';
 import { UserController } from './user.controller';
 import { UserValidation } from './user.validation';
-import upLoadFileHander from './user.utils';
-import upload from './user.utils';
 const router = express.Router();
 
 router
@@ -28,13 +26,6 @@ router
 router
   .route('/')
   .post(
-    validateRequest(UserValidation.createUserZodSchema),
-    UserController.createUser
-  );
-
-router
-  .route('/create-user')
-  .post(
     fileUploadHandler(),
     (req: Request, res: Response, next: NextFunction) => {
       if (req.body.data) {
@@ -44,11 +35,10 @@ router
       }
       return UserController.createNewUser(req, res, next);
     }
-  );
-
-  router.post('/upload/file', upload.single('file'), (req,res) => {
-
-    console.log(req.files)
+  )
+  .get(auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), (req: Request, res: Response, next: NextFunction) => {
+    return UserController.getAllUsers(req, res, next);
   })
+
 
 export const UserRoutes = router;

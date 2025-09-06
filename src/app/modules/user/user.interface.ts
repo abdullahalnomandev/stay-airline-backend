@@ -11,7 +11,7 @@ export type IUser = {
   password: string;
   address: string;
   dateOfBirth:Date;
-  image: string;
+  images: string[];
   status: 'active' | 'delete';
   verified: boolean;
   authentication?: {

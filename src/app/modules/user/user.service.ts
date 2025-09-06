@@ -8,8 +8,10 @@ import unlinkFile from '../../../shared/unlinkFile';
 import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
+import QueryBuilder from '../../builder/QueryBuilder';
+import { Query } from 'mongoose';
 
-const createUserToDB = async (payload: Partial<IUser>): Promise<{message:string}> => {
+const createUserToDB = async (payload: Partial<IUser>): Promise<{ message: string }> => {
   //set role
   payload.role = USER_ROLES.GUEST;
   const createUser = await User.create(payload);
@@ -37,7 +39,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<{message:string}
     { $set: { authentication } }
   );
 
-  return {message:"User created successfully"};
+  return { message: "User created successfully" };
 };
 
 const getUserProfileFromDB = async (
@@ -89,7 +91,7 @@ const createNewUserToDB = async (
     otp: otp,
     email: createUser.email!,
   };
-  console.log({values})
+  console.log({ values })
   const createAccountTemplate = emailTemplate.createAccount(values);
   emailHelper.sendEmail(createAccountTemplate);
 
@@ -123,9 +125,26 @@ const createNewUserToDB = async (
   // return updateDoc;
 };
 
+const getAllUsers = async (query: Record<string, any>) => {
+  const result = new QueryBuilder(User.find(), query).paginate()
+    .search(['name', 'email'])
+    .fields()
+    .filter()
+    .sort()
+
+  const data = await result.modelQuery;
+  const pagination = await result.getPaginationInfo();
+
+  return {
+    pagination,
+    data
+  };
+}
+
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
   updateProfileToDB,
-  createNewUserToDB
+  createNewUserToDB,
+  getAllUsers
 };

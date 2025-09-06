@@ -54,11 +54,13 @@ const updateProfile = catchAsync(
 //update profile
 const createNewUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    let image = getSingleFilePath(req.files, 'image');
+
+    let images = getMultipleFilesPath(req.files, 'image');
     const data = {
-      image,
+      images,
       ...req.body,
     };
+    console.log(req.files)
     const result = await UserService.createNewUserToDB(data);
 
     sendResponse(res, {
@@ -70,4 +72,21 @@ const createNewUser = catchAsync(
   }
 );
 
-export const UserController = { createUser, getUserProfile, updateProfile,createNewUser };
+const getAllUsers = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.getAllUsers(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Users retrieved successfully',
+    data: result,
+  });
+});
+
+export const UserController = {
+  createUser,
+  getUserProfile,
+  updateProfile,
+  createNewUser,
+  getAllUsers
+};

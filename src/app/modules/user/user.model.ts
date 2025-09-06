@@ -12,28 +12,17 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       required: true,
     },
-    role: {
-      type: String,
-      enum: Object.values(USER_ROLES),
-      required: true,
-    },
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
     },
-    contact: {
-      type: String,
-      required: true,
-    },
-    address: {
-      type: String,
-      required: true,
-    },
     dateOfBirth: {
       type: Date,
       required: true,
+      unique: true,
+      lowercase: true,
     },
     password: {
       type: String,
@@ -41,14 +30,18 @@ const userSchema = new Schema<IUser, UserModal>(
       select: 0,
       minlength: 8,
     },
-    image: {
-      type: String,
-      default: 'https://i.ibb.co/z5YHLV9/profile.png',
+    images: {
+      type: [String],
+      required: true,
     },
     status: {
       type: String,
       enum: ['active', 'delete'],
       default: 'active',
+    },
+    role:{
+      type: String,
+      default:USER_ROLES.GUEST
     },
     verified: {
       type: Boolean,
