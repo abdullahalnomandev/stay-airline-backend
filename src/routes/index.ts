@@ -6,6 +6,7 @@ import { airlinePersonVerificationRoutes } from '../app/modules/airlinePersonVer
 import { HotelRoutes } from '../app/modules/hotel/hotel.route';
 import { bookingRoutes } from '../app/modules/booking/booking.route';
 import { StripeRoutes } from '../app/modules/stripe/stripe.routes';
+import { ConversationRoutes } from '../app/modules/conversation/conversation.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -36,6 +37,10 @@ const apiRoutes = [
   {
     path: '/stripe',
     route: StripeRoutes,
+  },
+  {
+    path: '/conversation',
+    route: ConversationRoutes,
   },
 ];
 
