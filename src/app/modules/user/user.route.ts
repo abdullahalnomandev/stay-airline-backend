@@ -10,7 +10,7 @@ const router = express.Router();
 router
   .route('/me')
   .get(
-    auth(USER_ROLES.ADMIN, USER_ROLES.HOST,USER_ROLES.SUPER_ADMIN,USER_ROLES.GUEST),
+    auth(USER_ROLES.ADMIN, USER_ROLES.HOST, USER_ROLES.SUPER_ADMIN, USER_ROLES.GUEST),
     UserController.getUserProfile)
   .patch(
     auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.HOST),
@@ -27,8 +27,7 @@ router
 
 router
   .route('/')
-  .post(
-    fileUploadHandler(),
+  .post(fileUploadHandler(),
     (req: Request, res: Response, next: NextFunction) => {
       if (req.body.data) {
         req.body = UserValidation.createUserZodSchema.parse(
@@ -38,9 +37,17 @@ router
       return UserController.createNewUser(req, res, next);
     }
   )
-  .get(auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), (req: Request, res: Response, next: NextFunction) => {
-    return UserController.getAllUsers(req, res, next);
-  })
+  .get(
+    auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+    (req: Request, res: Response, next: NextFunction) => {
+      return UserController.getAllUsers(req, res, next);
+    }).patch(
+      fileUploadHandler(),
+      auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN , USER_ROLES.HOST , USER_ROLES.GUEST),
+      (req: Request, res: Response, next: NextFunction) => {
+        return UserController.updateUser(req, res, next);
+      }
+    )
 
 
 export const UserRoutes = router;

@@ -10,6 +10,8 @@ export type IUser = {
   email: string;
   password: string;
   address: string;
+  connectedAccountId: string;
+  stripeConnectedLink: string;
   dateOfBirth:Date;
   images: string[];
   status: 'active' | 'delete';

@@ -9,3 +9,9 @@ const unlinkFile = (file: string) => {
 };
 
 export default unlinkFile;
+
+export const unlinkFiles = (files: string[]) => {
+  files.forEach(file => {
+    unlinkFile(file);
+  });
+};

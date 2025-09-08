@@ -4,7 +4,7 @@ import { USER_ROLES } from '../../../enums/user';
 import ApiError from '../../../errors/ApiError';
 import { emailHelper } from '../../../helpers/emailHelper';
 import { emailTemplate } from '../../../shared/emailTemplate';
-import unlinkFile from '../../../shared/unlinkFile';
+import unlinkFile, { unlinkFiles } from '../../../shared/unlinkFile';
 import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
@@ -104,23 +104,30 @@ const createNewUserToDB = async (
   );
 
   return createUser;
-  // const { id } = user;
-  // const isExistUser = await User.isExistUserById(id);
-  // console.log({payload})
-  // if (!isExistUser) {
-  //   throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
-  // }
+};
 
-  // //unlink file here
-  // if (payload.image) {
-  //   unlinkFile(isExistUser.image);
-  // }
+const updateUserToDB = async (
+  userId: string,
+  payload: Partial<IUser>
+): Promise<Partial<IUser | null>> => {
 
-  // const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
-  //   new: true,
-  // });
 
-  // return updateDoc;
+  const isExistUser = await User.isExistUserById(userId);
+  console.log({payload})
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  //unlink file here
+  if (payload) {
+    unlinkFiles(isExistUser.images);
+  }
+
+  const updateDoc = await User.findOneAndUpdate({ _id: userId }, payload, {
+    new: true,
+  });
+
+  return updateDoc;
 };
 
 const getAllUsers = async (query: Record<string, any>) => {
@@ -144,5 +151,6 @@ export const UserService = {
   getUserProfileFromDB,
   updateProfileToDB,
   createNewUserToDB,
-  getAllUsers
+  getAllUsers,
+  updateUserToDB
 };

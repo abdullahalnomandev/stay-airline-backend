@@ -1,0 +1,29 @@
+import mongoose, { Model } from "mongoose";
+import { HOTEL_STATUS, ROOM_TYPE } from "./hotel.constant";
+import { IUser } from "../user/user.interface";
+
+export type IHotel = {
+    hostId: mongoose.Types.ObjectId | IUser;
+    name: string;
+    roomPrice: number;
+    description: string;
+    status: HOTEL_STATUS;
+    roomType: ROOM_TYPE.SINGLE | ROOM_TYPE.DOUBLE;
+    address: {
+        street: string;
+        city: string;
+        country: string;
+        zip: string;
+    };
+    coordinates: number[];
+    image?: string[];
+    facilities?: string[];
+    roomClosureDates?: Date[];
+    hotelRules?: {
+        title?: string;
+        description?: string;
+    }[];
+    utilityBill?: string;
+}
+
+export type IHotelModel = Model<IHotel, Record<string, unknown>>

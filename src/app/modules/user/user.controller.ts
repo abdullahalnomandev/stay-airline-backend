@@ -5,18 +5,19 @@ import { getMultipleFilesPath, getSingleFilePath } from '../../../shared/getFile
 import sendResponse from '../../../shared/sendResponse';
 import { UserService } from './user.service';
 
-const createUser = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { ...userData } = req.body;
-    const result = await UserService.createUserToDB(userData);
+// const createUser = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const { ...userData } = req.body;
+//     const result = await UserService.createUserToDB(userData);
 
-    sendResponse(res, {
-      success: true,
-      statusCode: StatusCodes.OK,
-      message: 'User created successfully',
-    });
-  }
-);
+//     sendResponse(res, {
+//       success: true,
+//       statusCode: StatusCodes.OK,
+//       message: 'User created successfully',
+//     });
+//   }
+// );
+
 
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id;
@@ -52,7 +53,7 @@ const updateProfile = catchAsync(
   }
 );
 
-//update profile
+//create user
 const createNewUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
 
@@ -63,6 +64,27 @@ const createNewUser = catchAsync(
     };
     console.log(req.files)
     const result = await UserService.createNewUserToDB(data);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'User Created successfully',
+      data: result,
+    });
+  }
+);
+//update profile
+const updateUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+
+    const userId = req.user?.id;
+    let images = getMultipleFilesPath(req.files, 'image');
+    const data = {
+      images,
+      ...req.body,
+    };
+    console.log(req.files)
+    const result = await UserService.updateUserToDB(userId, data);
 
     sendResponse(res, {
       success: true,
@@ -85,7 +107,7 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const UserController = {
-  createUser,
+  updateUser,
   getUserProfile,
   updateProfile,
   createNewUser,

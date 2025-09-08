@@ -5,7 +5,7 @@ import multer, { FileFilterCallback } from 'multer';
 import path from 'path';
 import ApiError from '../../errors/ApiError';
 
-const fileUploadHandler = () => {
+const fileUploadHandler = (fields?: { name: string; maxCount: number }[]) => {
   //create upload folder
   const baseUploadDir = path.join(process.cwd(), 'uploads');
   if (!fs.existsSync(baseUploadDir)) {
@@ -95,7 +95,7 @@ const fileUploadHandler = () => {
   const upload = multer({
     storage: storage,
     fileFilter: filterFilter,
-  }).fields([
+  }).fields(fields || [
     { name: 'image', maxCount: 3 },
     { name: 'media', maxCount: 3 },
     { name: 'doc', maxCount: 3 },

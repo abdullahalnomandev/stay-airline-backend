@@ -18,11 +18,24 @@ const userSchema = new Schema<IUser, UserModal>(
       unique: true,
       lowercase: true,
     },
+    contact: {
+      type: String,
+      default: null,
+    },
+    address: {
+      type: String,
+      default: null,
+    },
+    connectedAccountId: {
+      type: String,
+      default: null,
+    },
+    stripeConnectedLink: {
+      type: String,
+      default: null
+    },
     dateOfBirth: {
-      type: Date,
-      required: true,
-      unique: true,
-      lowercase: true,
+      type: Date
     },
     password: {
       type: String,
