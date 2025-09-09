@@ -67,7 +67,7 @@ const getAllConversaions = async (query: Record<string, any>, userId: string) =>
 
   const result = new QueryBuilder(Conversation.find({
     $or: [{ creator: userId }, { participant: userId }],
-  }), query).paginate();
+  }), query).paginate().sort();
 
   const data = await result.modelQuery.populate({
     path: populateField,

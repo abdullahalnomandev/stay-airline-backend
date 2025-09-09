@@ -17,13 +17,15 @@ const createMessage = async (message: IMessage) => {
     },
     {
       lastMessage: newMessage._id,
+      updatedAt: new Date()
+
     }
   );
 
   return newMessage;
 };
 
-const getAllMessages = async (query: Record<string, any>, userId:string, conversationId: string) => {
+const getAllMessages = async (query: Record<string, any>, userId: string, conversationId: string) => {
 
   const isSender = await Message.exists({ sender: userId });
   const populateField = isSender ? 'receiver' : 'sender';

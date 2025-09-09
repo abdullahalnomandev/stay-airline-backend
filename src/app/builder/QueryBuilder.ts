@@ -42,6 +42,7 @@ class QueryBuilder<T> {
   //sorting
   sort() {
     let sort = (this?.query?.sort as string) || '-createdAt';
+    console.log('sort',sort)
     this.modelQuery = this.modelQuery.sort(sort);
 
     return this;

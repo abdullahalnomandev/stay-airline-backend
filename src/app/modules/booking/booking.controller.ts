@@ -37,12 +37,12 @@ const cancelBooking = catchAsync(async (req: Request, res: Response) => {
 });
 
 //Get all bookings with filtering, pagination, and searching
-const getBookings = catchAsync(async (req: Request, res: Response) => {
+const getMyBooking = catchAsync(async (req: Request, res: Response) => {
     // const filters = pick(req.query, ['userId', 'hotelId', 'checkInDate', 'checkOutDate', 'status', 'paymentMethod', 'paymentStatus']);
     // const paginationOptions = pick(req.query, ['page', 'limit', 'sort']);
     const userId = req.user?.id;
 
-    const result = await BookingService.getBookings(req.query,userId);
+    const result = await BookingService.getMyBooking(req.query,userId);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -53,8 +53,6 @@ const getBookings = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getALlHostBookings = catchAsync(async (req: Request, res: Response) => {
-    // const filters = pick(req.query, ['userId', 'hotelId', 'checkInDate', 'checkOutDate', 'status', 'paymentMethod', 'paymentStatus']);
-    // const paginationOptions = pick(req.query, ['page', 'limit', 'sort']);
     const userId = req.user?.id;
 
     const result = await BookingService.getALlHostBookings(req.query,userId);
@@ -69,7 +67,7 @@ const getALlHostBookings = catchAsync(async (req: Request, res: Response) => {
 
 export const BookingController = {
     createBooking,
-    getBookings,
+    getMyBooking,
     cancelBooking,
     getALlHostBookings
 };

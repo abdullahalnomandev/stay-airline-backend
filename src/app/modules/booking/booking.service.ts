@@ -138,7 +138,7 @@ const cencelBooking = async (res: Response, bookingId: string, status: 'success'
 };
 
 
-const getBookings = async (query: Record<string, unknown>, userId: string) => {
+const getMyBooking = async (query: Record<string, unknown>, userId: string) => {
 
     query.userId = userId;
 
@@ -148,17 +148,30 @@ const getBookings = async (query: Record<string, unknown>, userId: string) => {
         .filter()
         .sort();
 
-    const result = await bookingQuery.modelQuery.populate({ path: 'hotelId', select: '-facilities -roomClosureDates -hotelRules -coordinates' }).lean();
+    const result = await bookingQuery.modelQuery.populate({
+        path: 'hotelId',
+        select: '-facilities -roomClosureDates -hotelRules -coordinates'
+    }).lean();
+
     const pagination = await bookingQuery.getPaginationInfo();
+
+    // Rename the populated field
+    const renamedResult = result.map(booking => ({
+        ...booking,
+        hotel: booking.hotelId,
+        hotelId: undefined
+    }));
 
     return {
         pagination,
-        result
+        result: renamedResult
     };
 };
+
 const getALlHostBookings = async (query: Record<string, unknown>, userId: string) => {
     const hostHotels = await Hotel.find({ hostId: userId }).lean();
     const hostHotelIds = hostHotels.map(hotel => hotel._id);
+
     query.hotelId = { $in: hostHotelIds };
 
     const bookingQuery = new QueryBuilder(Booking.find(), query)
@@ -169,21 +182,33 @@ const getALlHostBookings = async (query: Record<string, unknown>, userId: string
     const result = await bookingQuery.modelQuery
         .populate({
             path: 'hotelId',
-            select: '-facilities -roomClosureDates -hotelRules -coordinates'
+            select: 'name roomPrice '
         })
-        .lean();
+        .populate({
+            path: 'userId',
+            select: 'name email contact address '
+        }).lean();
 
     const pagination = await bookingQuery.getPaginationInfo();
 
+    // Rename the populated fields
+    const renamedResult = result.map(booking => ({
+        ...booking,
+        hotel: booking.hotelId,
+        user: booking.userId,
+        hotelId: undefined,
+        userId: undefined
+    }));
+
     return {
         pagination,
-        result
+        result: renamedResult
     };
 };
 
 export const BookingService = {
     createBooking,
-    getBookings,
+    getMyBooking,
     cencelBooking,
     getALlHostBookings
 };

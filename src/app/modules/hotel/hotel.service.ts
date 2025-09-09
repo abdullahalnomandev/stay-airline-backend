@@ -58,12 +58,45 @@ const createHotel = async (hotel: IHotel) => {
     return result;
 };
 
+const updateHotel = async (hotelData: Partial<IHotel>, hotelId: string) => {
+    const hotel = await Hotel.findOne({ _id: hotelId, hostId: hotelData.hostId });
+    if (!hotel) {
+        const userExists = await User.findById(hotelData.hostId);
+        if (!userExists) {
+            throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
+        }
+        throw new ApiError(StatusCodes.FORBIDDEN, 'You do not have permission to update this hotel');
+    }
+
+    if (hotelData.address) {
+        const { latitude, longitude } = await getLatLngFromAddress(String(hotelData.address));
+        if (latitude != null && longitude != null) {
+            hotelData.location = {
+                type: 'Point',
+                coordinates: [longitude, latitude], // [lng, lat]
+            };
+        }
+    }
+
+    console.log(hotelData)
+
+    const updatedHotel = await Hotel.findByIdAndUpdate(hotelId, hotelData, {
+        new: true,
+        runValidators: true
+    });
+
+    return updatedHotel;
+};
+
 const getHoels = async (query: Record<string, unknown>) => {
 
     const { lat, lng, km, roomType: type } = query;
 
     if (query.roomPrice) {
         query.roomPrice = { $lte: +query.roomPrice }
+    }
+    if (query.checkInDate) {
+        query.checkInDate = { $gte: new Date(query.checkInDate as string) }
     }
 
     if (query.roomType) {
@@ -84,6 +117,7 @@ const getHoels = async (query: Record<string, unknown>) => {
         .paginate()
         .search(hotelSearchableFields)
         .filter()
+        .sort()
 
     const result = await hotelQuery.modelQuery;
     const pagination = await hotelQuery.getPaginationInfo();
@@ -97,50 +131,51 @@ const getSingleHotel = async (hotelId: string) => {
     return Hotel.findById(hotelId)
 
 };
+
+const getListingHistory = async (query:Record<string,any>, hostId: string) => {
+
+    query.hostId = hostId
+
+    console.log(query)
+    const hotelQuery = new QueryBuilder(Hotel.find(), query)
+        .paginate()
+        .filter()
+        .sort()
+        .fields()
+
+    const result = await hotelQuery.modelQuery;
+    const pagination = await hotelQuery.getPaginationInfo();
+    return {
+        pagination,
+        result
+    };
+
+};
+
+const deleteListingHistory = async (hostId: string, hotelId: string) => {
+  const deletedHotel = await Hotel.findOneAndDelete({ hostId, _id: hotelId });
+
+  if (!deletedHotel) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Hotel not found');
+  }
+
+  return deletedHotel; // returns the deleted hotel document
+};
+
+
 const createAccountLink = async (hotelId: string) => {
     return Hotel.findById(hotelId)
 
 };
 
 
+
 export const HotelService = {
     createHotel,
     getHoels,
     getSingleHotel,
+    updateHotel,
+    getListingHistory,
+    deleteListingHistory,
     createAccountLink
 }
-
-
-
-// const createBookingCheckout = async (req, res) => {
-//   const { hotelId } = req.body;
-//   const hotel = await Hotel.findById(hotelId).populate("hostId");
-
-//   const session = await stripe.checkout.sessions.create({
-//     payment_method_types: ["card"],
-//     mode: "payment",
-//     customer_email: req.user.email,
-//     line_items: [
-//       {
-//         price_data: {
-//           currency: "usd",
-//           product_data: {
-//             name: hotel.name,
-//           },
-//           unit_amount: hotel.roomPrice * 100, // in cents
-//         },
-//         quantity: 1,
-//       },
-//     ],
-//     payment_intent_data: {
-//       application_fee_amount: Math.round(hotel.roomPrice * 0.1 * 100), // 10% fee for platform
-//       transfer_data: {
-//         destination: hotel.hostId.stripeAccountId, // send money to host
-//       },
-//     },
-//     success_url: "https://yourapp.com/success",
-//     cancel_url: "https://yourapp.com/cancel",
-//   });
-
-//   res.json({ url: session.url });
-// };
