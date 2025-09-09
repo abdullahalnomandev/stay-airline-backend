@@ -9,13 +9,17 @@ export type IHotel = {
     description: string;
     status: HOTEL_STATUS;
     roomType: ROOM_TYPE.SINGLE | ROOM_TYPE.DOUBLE;
-    address: {
-        street: string;
-        city: string;
-        country: string;
-        zip: string;
+    address: string;
+    // address: {
+    //     street: string;
+    //     city: string;
+    //     country: string;
+    //     zip: string;
+    // };
+    location: {
+        type: "Point";
+        coordinates: [number, number]; // [lng, lat]
     };
-    coordinates: number[];
     image?: string[];
     facilities?: string[];
     roomClosureDates?: Date[];

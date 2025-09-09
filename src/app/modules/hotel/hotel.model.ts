@@ -10,10 +10,10 @@ const hotelSchema = new Schema<IHotel, IHotelModel>(
             ref: 'User',
             required: true,
         },
-        status:{
+        status: {
             type: String,
-            enum:hotelStatus,
-            default:HOTEL_STATUS.ACTIVE
+            enum: hotelStatus,
+            default: HOTEL_STATUS.ACTIVE
         },
         name: {
             type: String,
@@ -33,26 +33,37 @@ const hotelSchema = new Schema<IHotel, IHotelModel>(
             required: true,
         },
         address: {
-            street: {
+            type: String,
+            require: true
+        },
+        // address: {
+        //     street: {
+        //         type: String,
+        //         required: true
+        //     },
+        //     city: {
+        //         type: String,
+        //         required: true
+        //     },
+        //     country: {
+        //         type: String,
+        //         required: true
+        //     },
+        //     zip: {
+        //         type: String,
+        //         required: true
+        //     }
+        // },
+        location: {
+            type: {
                 type: String,
+                enum: ["Point"],
                 required: true
             },
-            city: {
-                type: String,
-                required: true
-            },
-            country: {
-                type: String,
-                required: true
-            },
-            zip: {
-                type: String,
+            coordinates: {
+                type: [Number] as unknown as [number, number], // TS trick for tuple
                 required: true
             }
-        },
-        coordinates: {
-            type: [Number], // [longitude, latitude]
-            required: true,
         },
         image: {
             type: [String],
@@ -87,6 +98,6 @@ const hotelSchema = new Schema<IHotel, IHotelModel>(
     { timestamps: true }
 );
 
-hotelSchema.index({ coordinates: "2dsphere" });
+hotelSchema.index({ location: "2dsphere" });
 
 export const Hotel = model<IHotel, IHotelModel>('Hotel', hotelSchema);

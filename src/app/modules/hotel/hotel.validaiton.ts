@@ -11,12 +11,13 @@ const createHotelZodSchema = z.object({
   roomType: z.enum([ROOM_TYPE.SINGLE, ROOM_TYPE.DOUBLE], {
     required_error: 'Room type is required',
   }),
-  address: z.object({
-    street: z.string({ required_error: 'Street address is required' }),
-    city: z.string({ required_error: 'City is required' }),
-    country: z.string({ required_error: 'Country is required' }),
-    zip: z.string({ required_error: 'ZIP code is required' }),
-  }),
+  address: z.string({required_error:"Address is required"}),
+  // address: z.object({
+  //   street: z.string({ required_error: 'Street address is required' }),
+  //   city: z.string({ required_error: 'City is required' }),
+  //   country: z.string({ required_error: 'Country is required' }),
+  //   zip: z.string({ required_error: 'ZIP code is required' }),
+  // }),
   coordinates: z.array(z.number()).length(2),
   image: z.array(z.string()).optional(),
   facilities: z.array(z.string()).optional(),

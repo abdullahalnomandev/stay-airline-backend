@@ -60,26 +60,31 @@ const createConversation = async ({
   });
   return conversation;
 };
-const getAllConversaions = async (userId: string) => {
+const getAllConversaions = async (query: Record<string, any>, userId: string) => {
 
   const isParticipant = await Conversation.exists({ creator: userId });
-  // Decide which field to populate based on role
-  const populateField = isParticipant ? 'creator' : 'participant';
+  const populateField = isParticipant ? 'participant' : 'creator';
 
-  const conversations = await Conversation.find({
+  const result = new QueryBuilder(Conversation.find({
     $or: [{ creator: userId }, { participant: userId }],
+  }), query).paginate();
+
+  const data = await result.modelQuery.populate({
+    path: populateField,
+    select: 'name _id',
+    model: 'User',
   })
-    .populate({
-      path: populateField,
-      select: 'name _id',
-      model: 'User',
-    })
     .populate({
       path: 'lastMessage',
       select: 'text -_id',
     });
 
-  return conversations;
+  const pagination = await result.getPaginationInfo();
+
+  return {
+    pagination,
+    data
+  };
 };
 
 export const ConversationService = {

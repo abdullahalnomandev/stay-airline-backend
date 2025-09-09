@@ -22,7 +22,7 @@ const createConversation = catchAsync(
 const getAllConversaions = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const creator = req?.user?.id;
-    const result = await ConversationService.getAllConversaions(creator);
+    const result = await ConversationService.getAllConversaions(req.query, creator);
     sendResponse(res, {
       success: true,
       statusCode: StatusCodes.CREATED,

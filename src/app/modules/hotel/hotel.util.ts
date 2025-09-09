@@ -1,5 +1,3 @@
-import Stripe from "stripe";
-import config from "../../../config";
 import fetch from "node-fetch";
 
 type LatLng = {
@@ -9,7 +7,6 @@ type LatLng = {
 
 export async function getLatLngFromAddress(address: string): Promise<LatLng> {
   if (!address) throw new Error("Address is required");
-
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
     address
   )}&format=json&limit=1`;
@@ -25,14 +22,6 @@ export async function getLatLngFromAddress(address: string): Promise<LatLng> {
   };
 }
 
-// Example usage
-(async () => {
-  try {
-    const coords = await getLatLngFromAddress("Dhaka, Bangladesh");
-    console.log(coords); // { latitude: 23.8103, longitude: 90.4125 }
-  } catch (err) {
-    console.error(err);
-  }
-})();
+
 
 // stripe listen --forward-to http://localhost:5000/api/webhook

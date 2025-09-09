@@ -13,80 +13,80 @@ import { getLatLngFromAddress } from "./hotel.util";
 
 const createHotel = async (hotel: IHotel) => {
     const isUserExist = await User.findById(hotel.hostId);
+    if (!isUserExist) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
+    }
+    const { latitude, longitude } = await getLatLngFromAddress(String(hotel.address));
+    hotel.location = {
+        type: "Point",
+        coordinates: [longitude, latitude] // [lng, lat] 
+    }
     console.log(hotel)
 
-    // if (!isUserExist) {
-    //     throw new ApiError(StatusCodes.NOT_FOUND, 'Host not found');
-    // }
+    if (!isUserExist?.connectedAccountId) {
+        const stripe = new Stripe(config.stripe.secret_key as string);
+        const account = await stripe.accounts.create({
+            email: isUserExist.email as string,
+            controller: {
+                losses: {
+                    payments: 'application'
+                },
+                fees: {
+                    payer: 'application'
+                },
+                stripe_dashboard: {
+                    type: 'express'
+                }
+            },
+            capabilities: {
+                card_payments: {
+                    requested: true
+                },
+                transfers: {
+                    requested: true
+                }
+            },
+            business_type: 'individual'
+        })
+        await User.findByIdAndUpdate(hotel.hostId, { connectedAccountId: account.id, role: USER_ROLES.HOST });
+    }
+    if (!isUserExist?.stripeConnectedLink) {
+        hotel.status = HOTEL_STATUS.DRAFT
+    }
 
-    // if (!isUserExist?.connectedAccountId) {
-    //     const stripe = new Stripe(config.stripe.secret_key as string);
-    //      const account = await stripe.accounts.create({
-    //         email:isUserExist.email as string,
-    //         controller:{
-    //             losses:{
-    //                 payments:'application'
-    //             },
-    //             fees:{
-    //                 payer:'application'
-    //             },
-    //             stripe_dashboard:{
-    //                 type:'express'
-    //             }
-    //         },
-    //         capabilities:{
-    //             card_payments:{
-    //                 requested:true
-    //             },
-    //             transfers:{
-    //                 requested:true
-    //             }
-    //         },
-    //         business_type:'individual'
-    //     })
-    //     await User.findByIdAndUpdate(hotel.hostId,{connectedAccountId:account.id,role:USER_ROLES.HOST});
-    // }
-    // if(!isUserExist?.stripeConnectedLink){
-    //     hotel.status = HOTEL_STATUS.DRAFT
-    // }
-
-    // const result = await Hotel.create(hotel);
-    // return result;
+    const result = await Hotel.create(hotel);
+    return result;
 };
 
 const getHoels = async (query: Record<string, unknown>) => {
-    const latandLogAddress = await getLatLngFromAddress('Dhaka, Bangladesh');
-    console.log({latandLogAddress})
+
+    const { lat, lng, km, roomType: type } = query;
+
     if (query.roomPrice) {
         query.roomPrice = { $lte: +query.roomPrice }
     }
-    if (query.checkInDate) {
-        const newDate = new Date(query.checkInDate as string);
-        query.roomClosureDates = { $ne: newDate };
+
+    if (query.roomType) {
+        query.roomType = type;
     }
 
-    if (typeof query.coordinates === 'string' && JSON.parse(query.coordinates) && Array.isArray(JSON.parse(query.coordinates))) {
-        const [lng, lat] = JSON.parse(query.coordinates);
-        let radiusInKm = query.radius ? Number(query.radius) : 10;
-
-        query.coordinates = {
+    if (lat && lng) {
+        const radiusInMeters = (Number(km) || 5) * 1000; // default 5 km
+        query.location = {
             $geoWithin: {
-                $centerSphere: [[lng, lat], radiusInKm / 3963.1]
+                $centerSphere: [[Number(lng), Number(lat)], radiusInMeters / 6378.1] // radius in radians
             }
-        }
+        };
     }
 
-    delete query.radius;
-
-    const productQuery = new QueryBuilder(Hotel.find(), query)
+    // console.log(query)
+    const hotelQuery = new QueryBuilder(Hotel.find(), query)
         .paginate()
         .search(hotelSearchableFields)
-        .fields()
         .filter()
-        .sort()
 
-    const result = await productQuery.modelQuery;
-    const pagination = await productQuery.getPaginationInfo();
+    const result = await hotelQuery.modelQuery;
+    const pagination = await hotelQuery.getPaginationInfo();
     return {
         pagination,
         result

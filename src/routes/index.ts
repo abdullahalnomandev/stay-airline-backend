@@ -7,6 +7,7 @@ import { HotelRoutes } from '../app/modules/hotel/hotel.route';
 import { bookingRoutes } from '../app/modules/booking/booking.route';
 import { StripeRoutes } from '../app/modules/stripe/stripe.routes';
 import { ConversationRoutes } from '../app/modules/conversation/conversation.route';
+import { MessageRoutes } from '../app/modules/message/message.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -42,6 +43,10 @@ const apiRoutes = [
     path: '/conversation',
     route: ConversationRoutes,
   },
+  {
+    path:'/message',
+    route:MessageRoutes
+  }
 ];
 
 apiRoutes.forEach(route => router.use(route.path, route.route));

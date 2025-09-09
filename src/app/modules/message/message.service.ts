@@ -23,21 +23,28 @@ const createMessage = async (message: IMessage) => {
   return newMessage;
 };
 
-const getAllMessages = async (userId: string, participantId: string) => {
-  const messages = await Message.find({
-    $or: [
-      {
-        sender: userId,
-        receiver: participantId,
-      },
-      {
-        sender: participantId,
-        receiver: userId,
-      },
-    ],
-  }).sort({ createdAt: 1 });
+const getAllMessages = async (query: Record<string, any>, userId:string, conversationId: string) => {
 
-  return messages;
+  const isSender = await Message.exists({ sender: userId });
+  const populateField = isSender ? 'receiver' : 'sender';
+
+  const result = new QueryBuilder(Message.find({
+    conversation: conversationId
+  }), query).paginate();
+
+  const data = await result.modelQuery
+    .populate({
+      path: populateField,
+      select: 'name _id',
+      model: 'User'
+    })
+
+  const pagination = await result.getPaginationInfo();
+
+  return {
+    pagination,
+    data
+  };
 };
 export const MesdsageService = {
   createMessage,

@@ -7,30 +7,26 @@ import { HotelService } from './hotel.service';
 
 const createHotel = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    console.log(req.body)
+    // console.log(req.body)
 
     const hostId = req.user?.id;
     const { ...hotelData } = req.body;
     const roomImages = getMultipleFilesPath(req.files, 'image');
     const utilityBill = getSingleFilePath(req.files, 'doc');
-    hotelData.coordinates = JSON.parse(hotelData.coordinates);
+    // hotelData.hotelRules = JSON.parse(hotelData.hotelRules);
     hotelData.image = roomImages;
     hotelData.doc = utilityBill;
-    hotelData.address = JSON.parse(hotelData.address);
-    hotelData.roomClosureDates = JSON.parse(hotelData.roomClosureDates);
-    hotelData.hotelRules = JSON.parse(hotelData.hotelRules);
     hotelData.roomPrice = Number(hotelData.roomPrice);
-    hotelData.facilities = JSON.parse(hotelData.facilities);
     hotelData.hostId = hostId;
 
-    console.log(hotelData)
+    // console.log(hotelData)
 
-    // const result = await HotelService.createHotel(hotelData);
+    const result = await HotelService.createHotel(hotelData);
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,
         message: 'Hotel created successfully',
-        // data: result
+        data: result
     });
 }
 );
