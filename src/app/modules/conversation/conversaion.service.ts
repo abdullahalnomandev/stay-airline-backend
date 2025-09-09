@@ -63,7 +63,6 @@ const createConversation = async ({
 const getAllConversaions = async (userId: string) => {
 
   const isParticipant = await Conversation.exists({ creator: userId });
-
   // Decide which field to populate based on role
   const populateField = isParticipant ? 'creator' : 'participant';
 
