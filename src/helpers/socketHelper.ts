@@ -6,9 +6,9 @@ const socket = (io: Server) => {
   io.on('connection', socket => {
     logger.info(colors.blue('A user connected'));
 
-    socket.on('message', (msg) => {
-      io.emit('message', msg);
-    });
+    // socket.on('new_message', (msg) => {
+    //   io.emit('new_message', msg);
+    // });
 
     //disconnect
     socket.on('disconnect', () => {

@@ -3,7 +3,6 @@ const createReviewZodSchema = z.object({
   body: z.object({
     hotel: z.string().optional(),
     content: z.string({ required_error: 'Review content is required' }),
-    user: z.string({ required_error: 'User ID is required' }),
     rating: z.number({
       required_error: 'Rating is required'
     }).min(1, 'Rating must be at least 1').max(5, 'Rating cannot exceed 5'),

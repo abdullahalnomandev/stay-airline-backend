@@ -11,7 +11,6 @@ const router = express.Router();
 router
   .route('/')
   .post(
-    auth(USER_ROLES.HOST, USER_ROLES.GUEST),
     fileUploadHandler([
       { name: 'image', maxCount: 10 },
       { name: 'media', maxCount: 3 },

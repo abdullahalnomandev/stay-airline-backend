@@ -17,7 +17,7 @@ router
                     JSON.parse(req.body.data)
                 );
             }
-            return MessageController.createMessage(req, res, next);
+            return MessageController.sendMessage(req, res, next);
         }
     );
 

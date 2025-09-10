@@ -38,6 +38,7 @@ async function main() {
       },
     });
     socketHelper.socket(io);
+    (global as any).io = io;
     
     //@ts-ignore
     global.io = io;

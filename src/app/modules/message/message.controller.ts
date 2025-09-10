@@ -5,7 +5,7 @@ import sendResponse from '../../../shared/sendResponse';
 import { MesdsageService } from './message.service';
 import { getSingleFilePath } from '../../../shared/getFilePath';
 
-const createMessage = catchAsync(
+const sendMessage = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const sender = (req.user as any)?.id;
 
@@ -16,8 +16,7 @@ const createMessage = catchAsync(
       ...req.body,
     };
 
-    console.log(data)
-    const result = await MesdsageService.createMessage(data);
+    const result = await MesdsageService.sendMessage(data);
 
     sendResponse(res, {
       success: true,
@@ -45,6 +44,6 @@ const getAllMessages = catchAsync(async (req: Request, res: Response, next: Next
 
 
 export const MessageController = {
-  createMessage,
+  sendMessage,
   getAllMessages
 };

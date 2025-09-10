@@ -1,11 +1,13 @@
 import QueryBuilder from '../../builder/QueryBuilder';
 import { Conversation } from '../conversation/conversation.model';
 import { Message } from '../message/message.model';
-import { User } from '../user/user.model';
 import { IMessage } from './message.interface';
-const createMessage = async (message: IMessage) => {
+const sendMessage = async (message: IMessage) => {
   // Create the message first
   const newMessage = await Message.create(message);
+
+  // Populate sender information
+  await newMessage.populate('sender', 'name _id');
 
   // Update conversation with the new message ID
   await Conversation.updateOne(
@@ -18,9 +20,11 @@ const createMessage = async (message: IMessage) => {
     {
       lastMessage: newMessage._id,
       updatedAt: new Date()
-
     }
   );
+
+
+  (global as any).io.emit(`new_message::${message.conversation}`, newMessage)
 
   return newMessage;
 };
@@ -49,6 +53,6 @@ const getAllMessages = async (query: Record<string, any>, userId: string, conver
   };
 };
 export const MesdsageService = {
-  createMessage,
+  sendMessage,
   getAllMessages,
 };

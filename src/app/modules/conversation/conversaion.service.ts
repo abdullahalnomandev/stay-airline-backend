@@ -1,7 +1,7 @@
 import QueryBuilder from '../../builder/QueryBuilder';
 import { Message } from '../message/message.model';
 import { User } from '../user/user.model';
-import { IConversation } from './conversaion.interface';
+import { conversaionSearchableField } from './conversation.constant';
 import { Conversation } from './conversation.model';
 
 const createConversation = async ({
@@ -67,7 +67,11 @@ const getAllConversaions = async (query: Record<string, any>, userId: string) =>
 
   const result = new QueryBuilder(Conversation.find({
     $or: [{ creator: userId }, { participant: userId }],
-  }), query).paginate().sort();
+  }), query)
+    .paginate()
+    .sort()
+    .filter()
+    .search(conversaionSearchableField);
 
   const data = await result.modelQuery.populate({
     path: populateField,

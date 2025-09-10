@@ -16,6 +16,26 @@ router
     (req: Request, res: Response, next: NextFunction) => {
       return ReviewController.createReview(req, res, next);
     }
+  )
+  .get(
+    auth(USER_ROLES.HOST, USER_ROLES.GUEST),
+    ReviewController.getAllReviews);
+
+router
+  .route('/hotel/:hotelId')
+  .get(ReviewController.getReviewsByHotel);
+
+router
+  .route('/:id')
+  .get(ReviewController.getSingleReview)
+  .patch(
+    auth(USER_ROLES.HOST, USER_ROLES.GUEST),
+    validateRequest(ReviewValidation.updateReviewZodSchema),
+    ReviewController.updateReview
+  )
+  .delete(
+    auth(USER_ROLES.HOST, USER_ROLES.GUEST, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    ReviewController.deleteReview
   );
 
 
