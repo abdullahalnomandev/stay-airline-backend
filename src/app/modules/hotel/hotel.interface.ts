@@ -28,6 +28,7 @@ export type IHotel = {
         description?: string;
     }[];
     utilityBill?: string;
+    _id?:string;
 }
 
 export type IHotelModel = Model<IHotel, Record<string, unknown>>

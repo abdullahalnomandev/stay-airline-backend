@@ -8,7 +8,8 @@ import { HOTEL_STATUS, hotelSearchableFields } from "./hotel.constant";
 import Stripe from "stripe";
 import config from "../../../config";
 import { USER_ROLES } from "../../../enums/user";
-import { getLatLngFromAddress } from "./hotel.util";
+import { getDurationOfTwoPoints, getLatLngFromAddress } from "./hotel.util";
+import { Review } from "../review/review.model";
 
 
 const createHotel = async (hotel: IHotel) => {
@@ -88,51 +89,138 @@ const updateHotel = async (hotelData: Partial<IHotel>, hotelId: string) => {
     return updatedHotel;
 };
 
-const getHoels = async (query: Record<string, unknown>) => {
+// const getHotels = async (query: Record<string, unknown>) => {
 
+//     const { lat, lng, km, roomType: type } = query;
+
+//     if (query.roomPrice) {
+//         query.roomPrice = { $lte: +query.roomPrice }
+//     }
+//     if (query.checkInDate) {
+//         query.checkInDate = { $gte: new Date(query.checkInDate as string) }
+//     }
+
+//     if (query.roomType) {
+//         query.roomType = type;
+//     }
+
+//     if (lat && lng) {
+//         const radiusInMeters = (Number(km) || 10) * 1000; // default 10 km
+//         query.location = {
+//             $geoWithin: {
+//                 $centerSphere: [[Number(lng), Number(lat)], radiusInMeters / 6378.1] // radius in radians
+//             }
+//         };
+//     }
+
+
+//     // console.log(query)
+//     const hotelQuery = new QueryBuilder(Hotel.find(), query)
+//         .paginate()
+//         .search(hotelSearchableFields)
+//         .filter()
+//         .sort()
+
+
+
+//     const result = await hotelQuery.modelQuery;
+//     const reviews = await Review.find({ hotel: { $in: result.map(hotel => hotel._id) } });
+//     const avg = Review.rating
+
+//     console.log(reviews)
+
+//     const pagination = await hotelQuery.getPaginationInfo();
+//     return {
+//         pagination,
+//         result
+//     };
+// };
+
+
+const getHotels = async (query: Record<string, unknown>) => {
     const { lat, lng, km, roomType: type } = query;
 
     if (query.roomPrice) {
-        query.roomPrice = { $lte: +query.roomPrice }
+        query.roomPrice = { $lte: +query.roomPrice };
     }
     if (query.checkInDate) {
-        query.checkInDate = { $gte: new Date(query.checkInDate as string) }
+        query.checkInDate = { $gte: new Date(query.checkInDate as string) };
     }
-
     if (query.roomType) {
         query.roomType = type;
     }
 
     if (lat && lng) {
-        const radiusInMeters = (Number(km) || 5) * 1000; // default 5 km
+        const radiusInMeters = (Number(km) || 10) * 1000; // default 10 km
         query.location = {
             $geoWithin: {
-                $centerSphere: [[Number(lng), Number(lat)], radiusInMeters / 6378.1] // radius in radians
-            }
+                $centerSphere: [
+                    [Number(lng), Number(lat)],
+                    radiusInMeters / 6378.1, // radius in radians
+                ],
+            },
         };
     }
 
-    // console.log(query)
+    // Use QueryBuilder for hotels
     const hotelQuery = new QueryBuilder(Hotel.find(), query)
         .paginate()
         .search(hotelSearchableFields)
         .filter()
-        .sort()
+        .sort();
 
     const result = await hotelQuery.modelQuery;
     const pagination = await hotelQuery.getPaginationInfo();
+
+    // ✅ Get all hotel IDs
+    const hotelIds = result.map(h => h._id);
+
+    // ✅ Aggregate reviews by hotel
+    const reviewStats = await Review.aggregate([
+        { $match: { hotel: { $in: hotelIds } } },
+        {
+            $group: {
+                _id: "$hotel",
+                totalReviews: { $sum: 1 },
+                avgRating: { $avg: "$rating" },
+            },
+        },
+    ]);
+
+    // ✅ Map stats by hotelId for quick lookup
+    const statsMap = new Map(
+        reviewStats.map(s => [
+            String(s._id),
+            { totalReviews: s.totalReviews, avgRating: s.avgRating },
+        ])
+    );
+
+    // ✅ Attach stats to hotel results
+    const hotelsWithStats = result.map(hotel => {
+        const stats = statsMap.get(String(hotel._id as string)) || {
+            totalReviews: 0,
+            avgRating: 0,
+        };
+        return {
+            // @ts-ignore
+            ...hotel.toObject(),
+            ...stats,
+        };
+    });
+
     return {
         pagination,
-        result
+        result: hotelsWithStats,
     };
 };
+
 
 const getSingleHotel = async (hotelId: string) => {
     return Hotel.findById(hotelId)
 
 };
 
-const getListingHistory = async (query:Record<string,any>, hostId: string) => {
+const getListingHistory = async (query: Record<string, any>, hostId: string) => {
 
     query.hostId = hostId
 
@@ -153,13 +241,13 @@ const getListingHistory = async (query:Record<string,any>, hostId: string) => {
 };
 
 const deleteListingHistory = async (hostId: string, hotelId: string) => {
-  const deletedHotel = await Hotel.findOneAndDelete({ hostId, _id: hotelId });
+    const deletedHotel = await Hotel.findOneAndDelete({ hostId, _id: hotelId });
 
-  if (!deletedHotel) {
-    throw new ApiError(StatusCodes.NOT_FOUND, 'Hotel not found');
-  }
+    if (!deletedHotel) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'Hotel not found');
+    }
 
-  return deletedHotel; // returns the deleted hotel document
+    return deletedHotel; // returns the deleted hotel document
 };
 
 
@@ -172,7 +260,7 @@ const createAccountLink = async (hotelId: string) => {
 
 export const HotelService = {
     createHotel,
-    getHoels,
+    getHotels,
     getSingleHotel,
     updateHotel,
     getListingHistory,

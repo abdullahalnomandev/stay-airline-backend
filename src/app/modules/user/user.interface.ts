@@ -14,6 +14,7 @@ export type IUser = {
   stripeConnectedLink: string;
   dateOfBirth:Date;
   images: string[];
+  profilePic:string;
   status: 'active' | 'delete';
   verified: boolean;
   authentication?: {

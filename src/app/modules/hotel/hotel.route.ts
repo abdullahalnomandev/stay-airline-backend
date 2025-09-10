@@ -11,6 +11,8 @@ const router = express.Router();
 router
   .route('/')
   .post(
+    auth(USER_ROLES.HOST, USER_ROLES.GUEST),
+
     fileUploadHandler([
       { name: 'image', maxCount: 10 },
       { name: 'media', maxCount: 3 },
@@ -42,7 +44,7 @@ router
 router
   .route('/listing-history/:id')
   .delete(
-    auth(USER_ROLES.HOST, USER_ROLES.GUEST,USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
+    auth(USER_ROLES.HOST, USER_ROLES.GUEST, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
     (req: Request, res: Response, next: NextFunction) => {
       return HotelController.deleteListingHistory(req, res, next);
     }

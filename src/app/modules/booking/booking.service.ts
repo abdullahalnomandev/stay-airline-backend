@@ -134,14 +134,15 @@ export const createBooking = async (
         if (!host) {
             throw new ApiError(StatusCodes.NOT_FOUND, "Host user not found");
         }
+        console.log({host})
 
         // Prevent host from booking their own hotel
-        if (booking.userId.toString() === hotel.hostId.toString()) {
-            throw new ApiError(
-                StatusCodes.BAD_REQUEST,
-                "Host cannot book their own hotel"
-            );
-        }
+        // if (booking.userId.toString() === hotel.hostId.toString()) {
+        //     throw new ApiError(
+        //         StatusCodes.BAD_REQUEST,
+        //         "Host cannot book their own hotel"
+        //     );
+        // }
 
         // Create booking record
         const [bookingRecord] = await Booking.create([booking], { session });
@@ -279,7 +280,8 @@ const getALlHostBookings = async (query: Record<string, unknown>, userId: string
     const bookingQuery = new QueryBuilder(Booking.find(), query)
         .paginate()
         .filter()
-        .sort();
+        .sort()
+        .fields()
 
     const result = await bookingQuery.modelQuery
         .populate({

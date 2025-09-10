@@ -12,6 +12,10 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       required: true,
     },
+    profilePic:{
+      type:String,
+      default:null
+    },
     email: {
       type: String,
       required: true,

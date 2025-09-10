@@ -36,10 +36,14 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 const updateProfile = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
-    let image = getSingleFilePath(req.files, 'image');
+    const profilePic = getSingleFilePath(req.files, 'profilePic')
+    let images = getMultipleFilesPath(req.files, 'image');
+
+    console.log({profilePic})
 
     const data = {
-      image,
+      images,
+      profilePic,
       ...req.body,
     };
     const result = await UserService.updateProfileToDB(user, data);
@@ -57,12 +61,13 @@ const updateProfile = catchAsync(
 const createNewUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
 
-    let images = getMultipleFilesPath(req.files, 'image');
+    const profilePic = getSingleFilePath(req.files, 'profilePic')
+    let images = getSingleFilePath(req.files, 'image');
     const data = {
       images,
+      profilePic,
       ...req.body,
     };
-    console.log(req.files)
     const result = await UserService.createNewUserToDB(data);
 
     sendResponse(res, {
@@ -79,11 +84,12 @@ const updateUser = catchAsync(
 
     const userId = req.user?.id;
     let images = getMultipleFilesPath(req.files, 'image');
+    let profilePic = getSingleFilePath(req.files,'profilePic')
     const data = {
       images,
+      profilePic,
       ...req.body,
     };
-    console.log(req.files)
     const result = await UserService.updateUserToDB(userId, data);
 
     sendResponse(res, {

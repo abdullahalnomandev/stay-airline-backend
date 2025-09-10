@@ -48,7 +48,7 @@ const updateHotel = catchAsync(async (req: Request, res: Response, next: NextFun
 
 
 const getAllHotels = catchAsync(async (req: Request, res: Response) => {
-    const result = await HotelService.getHoels(req.query);
+    const result = await HotelService.getHotels(req.query);
     sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,

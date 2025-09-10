@@ -113,7 +113,6 @@ const updateUserToDB = async (
 
 
   const isExistUser = await User.isExistUserById(userId);
-  console.log({payload})
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
@@ -121,6 +120,7 @@ const updateUserToDB = async (
   //unlink file here
   if (payload) {
     unlinkFiles(isExistUser.images);
+    unlinkFile(isExistUser.profilePic)
   }
 
   const updateDoc = await User.findOneAndUpdate({ _id: userId }, payload, {
@@ -153,4 +153,4 @@ export const UserService = {
   createNewUserToDB,
   getAllUsers,
   updateUserToDB
-};
+};createNewUserToDB
