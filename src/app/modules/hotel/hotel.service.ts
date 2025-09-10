@@ -8,7 +8,7 @@ import { HOTEL_STATUS, hotelSearchableFields } from "./hotel.constant";
 import Stripe from "stripe";
 import config from "../../../config";
 import { USER_ROLES } from "../../../enums/user";
-import { getDurationOfTwoPoints, getLatLngFromAddress } from "./hotel.util";
+import { getLatLongWithLocalRequest } from "./hotel.util";
 import { Review } from "../review/review.model";
 
 
@@ -17,7 +17,8 @@ const createHotel = async (hotel: IHotel) => {
     if (!isUserExist) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
     }
-    const { latitude, longitude } = await getLatLngFromAddress(String(hotel.address));
+    // const { latitude, longitude } = await getLatLngFromAddress(String(hotel.address));
+    const { latitude, longitude } = await getLatLongWithLocalRequest(String(hotel.address));
     hotel.location = {
         type: "Point",
         coordinates: [longitude, latitude] // [lng, lat] 
@@ -70,7 +71,7 @@ const updateHotel = async (hotelData: Partial<IHotel>, hotelId: string) => {
     }
 
     if (hotelData.address) {
-        const { latitude, longitude } = await getLatLngFromAddress(String(hotelData.address));
+        const { latitude, longitude } = await getLatLongWithLocalRequest(String(hotelData.address));
         if (latitude != null && longitude != null) {
             hotelData.location = {
                 type: 'Point',
