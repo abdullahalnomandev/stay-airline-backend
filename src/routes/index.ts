@@ -10,6 +10,8 @@ import { ConversationRoutes } from '../app/modules/conversation/conversation.rou
 import { MessageRoutes } from '../app/modules/message/message.route';
 import { ReviewRoute } from '../app/modules/review/review.route';
 import { LegalDocumentRoutes } from '../app/modules/legalDocument/legalDocument.route';
+import { ContactCategoryRoute } from '../app/modules/contact/contactCategory/contactCategory.route';
+import { ContactInfoRoute } from '../app/modules/contact/contactInfo/contactInfo.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -56,6 +58,14 @@ const apiRoutes = [
   {
     path:'/legal-document',
     route:LegalDocumentRoutes
+  },
+  {
+    path:'/contact-category',
+    route:ContactCategoryRoute
+  },
+  {
+    path:'/contact-info',
+    route:ContactInfoRoute
   }
 ];
 

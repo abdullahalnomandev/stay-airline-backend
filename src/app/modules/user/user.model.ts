@@ -12,9 +12,13 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       required: true,
     },
-    profilePic:{
-      type:String,
-      default:null
+    profilePic: {
+      type: String,
+      default: null
+    },
+    isVerifiedHost: {
+      type: Boolean,
+      default: false
     },
     email: {
       type: String,
@@ -56,9 +60,9 @@ const userSchema = new Schema<IUser, UserModal>(
       enum: ['active', 'delete'],
       default: 'active',
     },
-    role:{
+    role: {
       type: String,
-      default:USER_ROLES.GUEST
+      default: USER_ROLES.GUEST
     },
     verified: {
       type: Boolean,
@@ -120,4 +124,14 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+
+userSchema.virtual('airlineVerification', {
+  ref: 'AirlinePersonVerification',
+  localField: '_id',
+  foreignField: 'user',
+  justOne: true
+});
+
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
 export const User = model<IUser, UserModal>('User', userSchema);

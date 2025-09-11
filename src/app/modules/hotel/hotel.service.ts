@@ -62,8 +62,8 @@ const createHotel = async (hotel: IHotel) => {
 
 const updateHotel = async (hotelData: Partial<IHotel>, hotelId: string) => {
     const hotel = await Hotel.findOne({ _id: hotelId, hostId: hotelData.hostId });
+    const userExists = await User.findById(hotelData.hostId);
     if (!hotel) {
-        const userExists = await User.findById(hotelData.hostId);
         if (!userExists) {
             throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
         }
@@ -80,7 +80,9 @@ const updateHotel = async (hotelData: Partial<IHotel>, hotelId: string) => {
         }
     }
 
-    console.log(hotelData)
+    if(hotelData.status === HOTEL_STATUS.ACTIVE && !userExists?.stripeConnectedLink){
+        hotelData.status = HOTEL_STATUS.DRAFT
+    }
 
     const updatedHotel = await Hotel.findByIdAndUpdate(hotelId, hotelData, {
         new: true,
@@ -150,6 +152,8 @@ const getHotels = async (query: Record<string, unknown>) => {
     if (query.roomType) {
         query.roomType = type;
     }
+
+    query.status = 'active';
 
     if (lat && lng) {
         const radiusInMeters = (Number(km) || 10) * 1000; // default 10 km
@@ -225,7 +229,6 @@ const getListingHistory = async (query: Record<string, any>, hostId: string) => 
 
     query.hostId = hostId
 
-    console.log(query)
     const hotelQuery = new QueryBuilder(Hotel.find(), query)
         .paginate()
         .filter()

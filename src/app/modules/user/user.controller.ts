@@ -38,9 +38,6 @@ const updateProfile = catchAsync(
     const user = req.user;
     const profilePic = getSingleFilePath(req.files, 'profilePic')
     let images = getMultipleFilesPath(req.files, 'image');
-
-    console.log({profilePic})
-
     const data = {
       images,
       profilePic,

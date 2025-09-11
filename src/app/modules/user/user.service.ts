@@ -44,12 +44,20 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<{ message: strin
 const getUserProfileFromDB = async (
   userId: string
 ): Promise<Partial<IUser>> => {
-  const isExistUser = await User.isExistUserById(userId);
-  if (!isExistUser) {
+  const existingUser = await User.findById(userId).populate({
+    path: 'airlineVerification',
+    match: { paymentStatus: "paid" },
+    populate: {
+      path: 'plan',
+      select: '-active'
+    },
+    select: 'designation plan employeeId images paymentStatus paymentMethod'
+  });
+  if (!existingUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-  return isExistUser;
+  return existingUser;
 };
 
 const updateProfileToDB = async (
@@ -89,7 +97,6 @@ const createNewUserToDB = async (
     otp: otp,
     email: createUser.email!,
   };
-  console.log({ values })
   const createAccountTemplate = emailTemplate.createAccount(values);
   emailHelper.sendEmail(createAccountTemplate);
 
@@ -131,20 +138,33 @@ const updateUserToDB = async (
 };
 
 const getAllUsers = async (query: Record<string, any>) => {
-  const result = new QueryBuilder(User.find(), query).paginate()
-    .search(['name', 'email'])
+  const result = new QueryBuilder(User.find(), query)
+    .paginate()
+    .search(["name", "email"])
     .fields()
     .filter()
-    .sort()
+    .sort();
 
-  const data = await result.modelQuery;
+  const data = await result.modelQuery
+    .populate({
+      path: "airlineVerification",
+      match: { paymentStatus: "paid" },
+      select: "designation plan employeeId images paymentStatus paymentMethod",
+      populate: {
+        path: "plan",
+        select: "-active",
+      },
+    })
+    .lean();
+
   const pagination = await result.getPaginationInfo();
 
   return {
     pagination,
-    data
+    data,
   };
-}
+};
+
 
 export const UserService = {
   createUserToDB,
@@ -153,4 +173,4 @@ export const UserService = {
   createNewUserToDB,
   getAllUsers,
   updateUserToDB
-};createNewUserToDB
+}; createNewUserToDB

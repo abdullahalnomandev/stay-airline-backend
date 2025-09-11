@@ -70,15 +70,13 @@ const getReviewsByHotel = async (query: Record<string, any>, hotelId: string) =>
     query.hotel = hotelId;
     query.isVisible = true;
 
-    console.log(query)
-
     const reviewQuery = new QueryBuilder(Review.find(), query)
     .filter()
     .paginate()
 
 
     const pagination = await reviewQuery.getPaginationInfo();
-    const data = await reviewQuery.modelQuery.populate('user','name email');
+    const data = await reviewQuery.modelQuery.populate('user','_id name image images').lean();
 
     return {
         pagination,

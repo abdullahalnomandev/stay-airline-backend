@@ -11,7 +11,6 @@ class QueryBuilder<T> {
 
   //searching
   search(searchableFields: string[]) {
-    console.log({searchableFields})
     if (this?.query?.searchTerm) {
       this.modelQuery = this.modelQuery.find({
         $or: searchableFields.map(
@@ -33,9 +32,6 @@ class QueryBuilder<T> {
     const queryObj = { ...this.query };
     const excludeFields = ['searchTerm', 'sort', 'page', 'limit', 'fields', 'km','lat','lng','checkInDate'];
     excludeFields.forEach(el => delete queryObj[el]);
-
-    console.log('test',queryObj.location);
-
     this.modelQuery = this.modelQuery.find(queryObj as FilterQuery<T>);
     return this;
   }
@@ -43,7 +39,6 @@ class QueryBuilder<T> {
   //sorting
   sort() {
     let sort = (this?.query?.sort as string) || '-createdAt';
-    console.log('sort',sort)
     this.modelQuery = this.modelQuery.sort(sort);
 
     return this;

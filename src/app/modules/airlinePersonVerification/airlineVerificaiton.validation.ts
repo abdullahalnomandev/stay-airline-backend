@@ -1,28 +1,28 @@
 import { z } from 'zod';
 
 const createAirlinePersonZodSchema = z.object({
-  userId: z.string({ required_error: 'User ID is required' }),
-  planId: z.string({ required_error: 'Plan ID is required' }),
+  user: z.string({ required_error: 'User ID is required' }),
+  plan: z.string({ required_error: 'Plan ID is required' }),
   designation: z.string({ required_error: 'Designation is required' }),
   employeeId: z.string({ required_error: 'Employee ID is required' }),
-  image: z.string({ required_error: 'Image is required' }),
+  images: z.array(z.string()).min(1, { message: 'At least one image is required' }),
   paymentStatus: z.enum(['pending', 'cancelled', 'paid'], {
     required_error: 'Payment status is required',
-  }),
-  paymentMethod: z.literal('card', {
+  }).default('pending'),
+  paymentMethod: z.enum(['card'], {
     required_error: 'Payment method is required and must be card',
-  }),
+  }).default('card'),
 });
 
 const updateAirlinePersonZodSchema = z.object({
-  name: z.string().optional(),
-  contact: z.string().optional(),
-  email: z.string().optional(),
-  password: z.string().optional(),
-  location: z.string().optional(),
-  image: z.string().optional(),
+  designation: z.string().optional(),
+  employeeId: z.string().optional(),
+  images: z.array(z.string()).optional(),
+  paymentStatus: z.enum(['pending', 'cancelled', 'paid']).optional(),
+  paymentMethod: z.enum(['card']).optional(),
 });
 
 export const AirlinePersonVerification = {
   createAirlinePersonZodSchema,
+  updateAirlinePersonZodSchema,
 };

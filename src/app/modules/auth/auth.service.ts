@@ -72,7 +72,6 @@ const forgetPasswordToDB = async (email: string) => {
     config.jwt.jwt_secret as Secret,
     '2m'
   );
-  console.log({ createResetToken });
   const value = {
     resetLink: `${config.frontend_url}/reset-password?token=${createResetToken}`,
     email: isExistUser.email,
@@ -148,8 +147,6 @@ const resetPasswordToDB = async (payload: IAuthResetPassword) => {
   if (!token) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'Reset token is required');
   }
-
-  console.log({ payload });
   // verify token without throwing
   const decodedUser = jwtHelper.verifyToken(
     token,

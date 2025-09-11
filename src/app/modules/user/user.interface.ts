@@ -12,6 +12,7 @@ export type IUser = {
   address: string;
   connectedAccountId: string;
   stripeConnectedLink: string;
+  isVerifiedHost:boolean;
   dateOfBirth:Date;
   images: string[];
   profilePic:string;

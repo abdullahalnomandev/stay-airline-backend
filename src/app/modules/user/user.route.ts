@@ -37,7 +37,7 @@ router
     }
   )
   .get(
-    auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+    // auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
     (req: Request, res: Response, next: NextFunction) => {
       return UserController.getAllUsers(req, res, next);
     }).patch(

@@ -23,7 +23,6 @@ const sendMessage = async (message: IMessage) => {
     }
   );
 
-
   (global as any).io.emit(`new_message::${message.conversation}`, newMessage)
 
   return newMessage;

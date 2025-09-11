@@ -30,11 +30,11 @@ const createairlinePersonVerification = async (
         }
 
         // Check if user exists
-        const userExist = await User.findById(airlinePersonVerification.userId).session(session);
+        const userExist = await User.findById(airlinePersonVerification.user).session(session);
         if (!userExist) throw new ApiError(404, 'User id not correct');
 
         // Get price plan
-        const pricePlan = await VerificationPlan.findById(airlinePersonVerification.planId).lean();
+        const pricePlan = await VerificationPlan.findById(airlinePersonVerification.plan).lean();
         if (!pricePlan) throw new ApiError(404, 'Plan id not correct');
 
         // Create AirlinePersonVerification record

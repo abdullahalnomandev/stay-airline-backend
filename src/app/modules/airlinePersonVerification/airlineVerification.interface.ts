@@ -2,8 +2,8 @@ import { Model, Types } from "mongoose";
 import { IUser } from "../user/user.interface";
 import { IVerificationPlan } from "../verificationPlan/verificaitonPlan.interface";
 export type IairlinePersonVerification = {
-    userId: Types.ObjectId | IUser;
-    planId: Types.ObjectId | IVerificationPlan;
+    user: Types.ObjectId | IUser;
+    plan: Types.ObjectId | IVerificationPlan;
     designation: string;
     employeeId: string;
     images: string[];

@@ -8,12 +8,11 @@ import { getMultipleFilesPath } from '../../../shared/getFilePath';
 const createairlinePersonVerification = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
   let images = getMultipleFilesPath(req.files, 'image');
-
   const airlinePersonVerificationData = {
     ...req.body,
     images,
   }
-
+  
   const origin = `${req.protocol}://${req.get('host')}`;
   const result = await AirlinePersonVerificationService.createairlinePersonVerification(origin, airlinePersonVerificationData);
 
@@ -26,6 +25,7 @@ const createairlinePersonVerification = catchAsync(async (req: Request, res: Res
 });
 
 const getairlinePersonVerifications = catchAsync(async (req: Request, res: Response) => {
+  
   const result = await AirlinePersonVerificationService.getairlinePersonVerifications(req.query);
 
   sendResponse(res, {
@@ -62,7 +62,6 @@ const updateairlinePersonVerification = catchAsync(async (req: Request, res: Res
 });
 
 const airlinePersonPaymentVerificationEvent = catchAsync(async (req: Request, res: Response) => {
-  console.log('GET WEBHOOK MESSAGE', req.params);
   const { id } = req.params;
   const { status, userId } = req.query as { status: string, userId: string };
 

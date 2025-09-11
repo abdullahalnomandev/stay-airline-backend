@@ -3,8 +3,14 @@ import { IairlinePersonVerification, IairlinePersonVerificationModel } from './a
 
 const airlinePersonVerificationSchema = new Schema<IairlinePersonVerification, IairlinePersonVerificationModel>(
     {
-        userId: {
+        user: {
             type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        plan: {
+            type: Schema.Types.ObjectId,
+            ref: 'VerificationPlan',
             required: true,
         },
         designation: {
@@ -22,7 +28,7 @@ const airlinePersonVerificationSchema = new Schema<IairlinePersonVerification, I
         paymentStatus: {
             type: String,
             enum: ['pending', 'cancelled', 'paid'],
-            default:'pending',
+            default: 'pending',
             required: true,
         },
         paymentMethod: {

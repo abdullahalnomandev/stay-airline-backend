@@ -9,10 +9,7 @@ const router = express.Router();
 
 router
   .route('/')
-  // .post(
-  //   AirlinePersonVerificationController.createairlinePersonVerification
-  // )
-    .post(
+  .post(
     fileUploadHandler(),
     (req: Request, res: Response, next: NextFunction) => {
       if (req.body.data) {
@@ -23,7 +20,7 @@ router
       return AirlinePersonVerificationController.createairlinePersonVerification(req, res, next);
     }
   )
-  .get(AirlinePersonVerificationController.getairlinePersonVerifications);
+  .get(AirlinePersonVerificationController.createairlinePersonVerification);
 
 router
   .route('/webhook/:id')

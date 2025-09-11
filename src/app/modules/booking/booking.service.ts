@@ -134,8 +134,6 @@ export const createBooking = async (
         if (!host) {
             throw new ApiError(StatusCodes.NOT_FOUND, "Host user not found");
         }
-        console.log({host})
-
         // Prevent host from booking their own hotel
         // if (booking.userId.toString() === hotel.hostId.toString()) {
         //     throw new ApiError(
