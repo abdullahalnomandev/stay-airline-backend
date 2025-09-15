@@ -32,3 +32,5 @@ export const bookingPaymentMethod = [
     BOOKING_PAYMENT_METHOD.CASH,
     BOOKING_PAYMENT_METHOD.CARD
 ]
+
+export const bookingSearchableFields = ['bookingId','userId.email','hotelId.email','user.contact']

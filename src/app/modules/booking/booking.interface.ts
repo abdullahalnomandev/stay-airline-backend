@@ -6,6 +6,7 @@ import { IHotel } from "../hotel/hotel.interface";
 export type IBooking = {
     userId: mongoose.Types.ObjectId | IUser;
     hotelId: mongoose.Types.ObjectId | IHotel;
+    bookingId:string;
     checkInDate: Date;
     checkOutDate: Date;
     status: BOOKING_STATUS;

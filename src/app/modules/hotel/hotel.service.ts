@@ -170,6 +170,7 @@ const getHotels = async (query: Record<string, unknown>) => {
     // Use QueryBuilder for hotels
     const hotelQuery = new QueryBuilder(Hotel.find(), query)
         .paginate()
+        .fields()
         .search(hotelSearchableFields)
         .filter()
         .sort();
@@ -219,10 +220,14 @@ const getHotels = async (query: Record<string, unknown>) => {
     };
 };
 
-
 const getSingleHotel = async (hotelId: string) => {
-    return Hotel.findById(hotelId)
+    const hotel = await Hotel.findById(hotelId).populate('facilities').lean();
+    
+    if (!hotel) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'Hotel not found');
+    }
 
+    return hotel
 };
 
 const getListingHistory = async (query: Record<string, any>, hostId: string) => {

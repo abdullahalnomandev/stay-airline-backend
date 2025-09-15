@@ -14,6 +14,10 @@ const bookingSchema = new Schema<IBooking, IBookingModel>(
             ref: 'Hotel',
             required: true,
         },
+        bookingId:{
+            type:String,
+            require:true
+        },
         checkInDate: {
             type: Date,
             required: true,

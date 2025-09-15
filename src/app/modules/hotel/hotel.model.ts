@@ -69,10 +69,11 @@ const hotelSchema = new Schema<IHotel, IHotelModel>(
             type: [String],
             required: false
         }, // images
-        facilities: {
-            type: [String],
+        facilities: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Facility',
             required: false
-        },
+        }],
         roomClosureDates: [
             {
                 type: Date,

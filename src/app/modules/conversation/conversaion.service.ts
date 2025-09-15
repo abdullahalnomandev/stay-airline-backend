@@ -60,36 +60,47 @@ const createConversation = async ({
   });
   return conversation;
 };
-const getAllConversaions = async (query: Record<string, any>, userId: string) => {
 
+const getAllConversaions = async (query: Record<string, any>, userId: string) => {
   const isParticipant = await Conversation.exists({ creator: userId });
   const populateField = isParticipant ? 'participant' : 'creator';
 
-  const result = new QueryBuilder(Conversation.find({
-    $or: [{ creator: userId }, { participant: userId }],
-  }), query)
+  const search = query.searchTerm || "";
+
+  const result = new QueryBuilder(
+    Conversation.find({
+      $or: [{ creator: userId }, { participant: userId }],
+    }),
+    query
+  )
     .paginate()
     .sort()
-    .filter()
-    .search(conversaionSearchableField);
+    .filter();
 
-  const data = await result.modelQuery.populate({
-    path: populateField,
-    select: 'name _id',
-    model: 'User',
-  })
+  let modelQuery = result.modelQuery
     .populate({
-      path: 'lastMessage',
-      select: 'text -_id',
+      path: populateField,
+      select: "name _id profilePic", // add more if needed
+      model: "User",
+      match: search ? { name: { $regex: search, $options: "i" } } : {}, // search on user name
+    })
+    .populate({
+      path: "lastMessage",
+      select: "text -_id",
     });
 
+  const data = await modelQuery;
   const pagination = await result.getPaginationInfo();
+
+  // ⚠️ Important: filter out conversations where populate returned null
+  const filteredData = data.filter((conv: any) => conv[populateField] !== null);
 
   return {
     pagination,
-    data
+    data: filteredData,
   };
 };
+
 
 export const ConversationService = {
   createConversation,

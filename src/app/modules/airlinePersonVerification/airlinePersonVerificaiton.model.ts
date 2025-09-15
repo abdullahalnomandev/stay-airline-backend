@@ -3,11 +3,11 @@ import { IairlinePersonVerification, IairlinePersonVerificationModel } from './a
 
 const airlinePersonVerificationSchema = new Schema<IairlinePersonVerification, IairlinePersonVerificationModel>(
     {
-        user: {
-            type: Schema.Types.ObjectId,
-            ref: 'User',
-            required: true
-        },
+        // user: {
+        //     type: Schema.Types.ObjectId,
+        //     ref: 'User',
+        //     required: true
+        // },
         plan: {
             type: Schema.Types.ObjectId,
             ref: 'VerificationPlan',
@@ -15,15 +15,19 @@ const airlinePersonVerificationSchema = new Schema<IairlinePersonVerification, I
         },
         designation: {
             type: String,
-            required: true,
+            required: false,
         },
         employeeId: {
             type: String,
-            required: true,
+            required: false,
+        },
+        email: {
+            type: String,
+            required: false,
         },
         images: {
             type: [String],
-            required: true,
+            required: false,
         },
         paymentStatus: {
             type: String,

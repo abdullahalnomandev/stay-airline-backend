@@ -3,9 +3,8 @@ import { z } from 'zod';
 const createAirlinePersonZodSchema = z.object({
   user: z.string({ required_error: 'User ID is required' }),
   plan: z.string({ required_error: 'Plan ID is required' }),
-  designation: z.string({ required_error: 'Designation is required' }),
-  employeeId: z.string({ required_error: 'Employee ID is required' }),
-  images: z.array(z.string()).min(1, { message: 'At least one image is required' }),
+  designation: z.string().optional(),
+  employeeId: z.string().optional(),
   paymentStatus: z.enum(['pending', 'cancelled', 'paid'], {
     required_error: 'Payment status is required',
   }).default('pending'),

@@ -32,14 +32,12 @@ router.post(
 
 router.post(
   '/change-password',
-  auth(USER_ROLES.ADMIN, USER_ROLES.USER),
   validateRequest(AuthValidation.createChangePasswordZodSchema),
   AuthController.changePassword
 );
 
 router.post(
   '/resend-otp',
-  auth(USER_ROLES.ADMIN, USER_ROLES.USER),
   validateRequest(AuthValidation.createResendOtpZodSchema),
   AuthController.resendOtp
 );

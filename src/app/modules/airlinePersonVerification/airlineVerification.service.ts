@@ -30,8 +30,9 @@ const createairlinePersonVerification = async (
         }
 
         // Check if user exists
-        const userExist = await User.findById(airlinePersonVerification.user).session(session);
-        if (!userExist) throw new ApiError(404, 'User id not correct');
+        const userEmailExist = await User.findOne({email:airlinePersonVerification.email}).session(session);
+        if (!userEmailExist) throw new ApiError(404, 'User email not correct');
+        // airlinePersonVerification.email = userExist.email;
 
         // Get price plan
         const pricePlan = await VerificationPlan.findById(airlinePersonVerification.plan).lean();
@@ -47,7 +48,7 @@ const createairlinePersonVerification = async (
         // Create Stripe checkout session
         const checkoutSession = await stripe.checkout.sessions.create({
             currency: 'usd',
-            customer_email: userExist.email as string,
+            customer_email: userEmailExist.email as string,
             line_items: [
                 {
                     price_data: {
@@ -59,8 +60,8 @@ const createairlinePersonVerification = async (
                 },
             ],
             mode: 'payment',
-            success_url: `${rootUrl}/api/v1/airline-verification/webhook/${verificationRecord._id}?status=success&userId=${userExist._id}`,
-            cancel_url: `${rootUrl}/api/v1/airline-verification/webhook/${verificationRecord._id}?status=cancel&userId=${userExist._id}`,
+            success_url: `${rootUrl}/api/v1/airline-verification/webhook/${verificationRecord._id}?status=success&userId=${userEmailExist._id}`,
+            cancel_url: `${rootUrl}/api/v1/airline-verification/webhook/${verificationRecord._id}?status=cancel&userId=${userEmailExist._id}`,
         });
 
         if (useTransaction) await session.commitTransaction();

@@ -15,6 +15,7 @@ import {
 import cryptoToken from '../../../util/cryptoToken';
 import generateOTP from '../../../util/generateOTP';
 import { User } from '../user/user.model';
+import { AirlinePersonVerification } from '../airlinePersonVerification/airlinePersonVerificaiton.model';
 
 //login
 const loginUserFromDB = async (payload: ILoginData) => {
@@ -30,6 +31,14 @@ const loginUserFromDB = async (payload: ILoginData) => {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       'Please verify your account, then try to login again'
+    );
+  }
+
+  const isUserVerified = await AirlinePersonVerification.findOne({email:payload.email,paymentStatus:'paid'});
+  if (!isUserVerified) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Please verify your airline account, then try to login again'
     );
   }
 
@@ -242,6 +251,8 @@ const changePasswordToDB = async (
 const resendOtpToDB = async (email: string) => {
   //set role
   const registedUser = await User.findOne({email},'email verified').lean()
+
+  console.log({email})
 
   if(registedUser?.verified){
     throw new ApiError(StatusCodes.BAD_REQUEST, 'User already verified');

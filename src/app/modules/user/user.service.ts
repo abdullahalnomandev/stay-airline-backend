@@ -9,6 +9,9 @@ import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
 import QueryBuilder from '../../builder/QueryBuilder';
+import { userSearchableField } from './user.constant';
+import { Hotel } from '../hotel/hotel.model';
+import { Booking } from '../booking/booking.model';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<{ message: string }> => {
   //set role
@@ -140,7 +143,7 @@ const updateUserToDB = async (
 const getAllUsers = async (query: Record<string, any>) => {
   const result = new QueryBuilder(User.find(), query)
     .paginate()
-    .search(["name", "email"])
+    .search(userSearchableField)
     .fields()
     .filter()
     .sort();
@@ -165,6 +168,30 @@ const getAllUsers = async (query: Record<string, any>) => {
   };
 };
 
+const deleteUserFromDB = async (
+  userId: string
+): Promise<Partial<IUser | null>> => {
+  const isExistUser = await User.isExistUserById(userId);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  //unlink file here
+  if (isExistUser.logo) {
+    unlinkFiles(isExistUser.logo);
+  }
+  if (isExistUser.profilePic) {
+    unlinkFile(isExistUser.profilePic);
+  }
+
+  // Delete associated hotels and bookings if they exist
+  Hotel.deleteMany({ hostId: isExistUser._id });
+  Booking.deleteMany({ userId: isExistUser._id });
+
+
+  const deletedUser = await User.findByIdAndDelete(userId);
+  return deletedUser;
+};
 
 export const UserService = {
   createUserToDB,
@@ -172,5 +199,6 @@ export const UserService = {
   updateProfileToDB,
   createNewUserToDB,
   getAllUsers,
-  updateUserToDB
+  updateUserToDB,
+  deleteUserFromDB
 }; createNewUserToDB

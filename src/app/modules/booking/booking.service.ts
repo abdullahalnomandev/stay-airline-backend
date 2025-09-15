@@ -4,13 +4,20 @@ import QueryBuilder from "../../builder/QueryBuilder";
 import { IBooking } from "./booking.interface";
 import { Booking } from "./booking.model";
 import { Hotel } from "../hotel/hotel.model";
-import { BOOKING_STATUS, PAYMENT_STATUS } from "./booking.constant";
-import mongoose from "mongoose";
+import { BOOKING_STATUS, bookingSearchableFields, PAYMENT_STATUS } from "./booking.constant";
+import mongoose, { FlattenMaps } from "mongoose";
 import Stripe from "stripe";
 import config from "../../../config";
 import { User } from "../user/user.model";
 import { Response } from "express";
 import stripe from "../../../config/stripe";
+import { generateBookingId } from "./booking.util";
+import { IUser } from "../user/user.interface";
+import { USER_ROLES } from "../../../enums/user";
+import { JwtPayload } from "jsonwebtoken";
+import { IHotel } from "../hotel/hotel.interface";
+import { paginationHelper } from "../../../helpers/paginationHelper";
+import { IPaginationOptions } from "../../../types/pagination";
 
 // const createBooking = async (
 //     rootUrl: string,
@@ -115,6 +122,10 @@ export const createBooking = async (
             throw new ApiError(StatusCodes.NOT_FOUND, "Hotel not found");
         }
 
+        //Generate booking id
+        const bookingId = await generateBookingId();
+        booking.bookingId = bookingId;
+
         // Validate dates
         if (booking.checkInDate >= booking.checkOutDate) {
             throw new ApiError(
@@ -157,10 +168,10 @@ export const createBooking = async (
                         product_data: {
                             name: hotel.name as string,
                             description: hotel.description as string,
-                            images:
-                                hotel.image && hotel.image.length > 0
-                                    ? [`${rootUrl}/${hotel.image[0]}`]
-                                    : [],
+                            // images:
+                            //     hotel.image && hotel.image.length > 0
+                            //         ? [`${rootUrl}/${hotel.image[0]}`]
+                            //         : [],
                         },
                         unit_amount: hotel.roomPrice
                             ? Math.round(hotel.roomPrice * 100)
@@ -308,9 +319,266 @@ const getALlHostBookings = async (query: Record<string, unknown>, userId: string
     };
 };
 
+
+// const getALlHostBookingsByAdmin = async (query: Record<string, unknown>, userId: string) => {
+
+//     query.paymentStatus = 'paid'
+
+//     const bookingQuery = new QueryBuilder(Booking.find(), query)
+//         .paginate()
+//         .filter()
+//         .sort()
+//         .fields()
+//         .search(bookingSearchableFields)
+
+
+//     const result = await bookingQuery.modelQuery
+//         .populate({
+//             path: 'hotelId',
+//             select: 'name roomPrice',
+//             populate: {
+//                 path: 'hostId',
+//                 select: 'name email contact address'
+//             }
+//         })
+//         .populate({
+//             path: 'userId',
+//             select: 'name email contact address '
+//         }).lean();
+
+//     const pagination = await bookingQuery.getPaginationInfo();
+
+//     // Rename the populated fields
+//     const renamedResult = result.map(booking => ({
+//         ...booking,
+//         hotel: {
+//             ...booking.hotelId,
+//             host: (booking.hotelId as FlattenMaps<IHotel>).hostId,
+//             hostId: undefined
+//         },
+//         user: booking.userId,
+//         hotelId: undefined,
+//         userId: undefined
+//     }));
+
+//     return {
+//         pagination,
+//         result: renamedResult
+//     };
+// };
+
+
+const getALlHostBookingsByAdmin = async (query: Record<string, any>, paginationOptions: IPaginationOptions) => {
+    
+    const { page, limit, skip, sortBy, sortOrder } = paginationHelper.calculatePagination(paginationOptions);
+    // Always only paid bookings
+    query.paymentStatus = "paid";
+  // Extract pagination details
+
+    const searchTerm = query.searchTerm || "";
+
+    // Build $match conditions
+    const matchStage: any = {
+        paymentStatus: "paid",
+    };
+
+    // If search term exists, apply regex search in hotel, host, user fields
+    let searchStage = {};
+    if (searchTerm) {
+        searchStage = {
+            $or: [
+                { "bookingId": { $regex: searchTerm, $options: "i" } },
+                { "hotel.name": { $regex: searchTerm, $options: "i" } },
+                { "hotel.host.name": { $regex: searchTerm, $options: "i" } },
+                { "user.name": { $regex: searchTerm, $options: "i" } },
+                { "user.email": { $regex: searchTerm, $options: "i" } },
+                { "user.contact": { $regex: searchTerm, $options: "i" } }
+            ],
+        };
+    }
+
+    const result = await Booking.aggregate([
+        { $match: matchStage },
+
+        // Lookup hotel
+        {
+            $lookup: {
+                from: "hotels",
+                localField: "hotelId",
+                foreignField: "_id",
+                as: "hotel",
+            },
+        },
+        { $unwind: "$hotel" },
+
+        // Lookup host inside hotel
+        {
+            $lookup: {
+                from: "users", // host collection is same as users? adjust if different
+                localField: "hotel.hostId",
+                foreignField: "_id",
+                as: "hotel.host",
+            },
+        },
+        { $unwind: "$hotel.host" },
+
+        // Lookup user
+        {
+            $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user",
+            },
+        },
+        { $unwind: "$user" },
+
+        // Apply search term filter
+        { $match: searchStage },
+
+        // Project only necessary fields
+        {
+            $project: {
+                bookingId: 1,
+                paymentStatus: 1,
+                createdAt: 1,
+                "hotel.name": 1,
+                "hotel.roomPrice": 1,
+                "hotel.host.name": 1,
+                "hotel.host.email": 1,
+                "hotel.host.contact": 1,
+                "hotel.host.address": 1,
+                "user.name": 1,
+                "user.email": 1,
+                "user.contact": 1,
+                "user.address": 1,
+            },
+        },
+
+        // Sorting
+        { $sort: { createdAt: -1 } },
+
+        // Pagination
+        { $skip: skip },
+        { $limit: limit },
+    ]);
+
+    // Count total docs with same filters
+    const total = await Booking.aggregate([
+        { $match: matchStage },
+        {
+            $lookup: {
+                from: "hotels",
+                localField: "hotelId",
+                foreignField: "_id",
+                as: "hotel",
+            },
+        },
+        { $unwind: "$hotel" },
+        {
+            $lookup: {
+                from: "users",
+                localField: "hotel.hostId",
+                foreignField: "_id",
+                as: "hotel.host",
+            },
+        },
+        { $unwind: "$hotel.host" },
+        {
+            $lookup: {
+                from: "users",
+                localField: "userId",
+                foreignField: "_id",
+                as: "user",
+            },
+        },
+        { $unwind: "$user" },
+        { $match: searchStage },
+        { $count: "total" },
+    ]);
+
+    const pagination = {
+        total: total[0]?.total || 0,
+        limit,
+        page,
+        totalPage: Math.ceil((total[0]?.total || 0) / limit),
+    };
+
+    return {
+        pagination,
+        result,
+    };
+};
+
+
+const updateBooking = async (
+    bookingId: string,
+    booking: Partial<IBooking>,
+    user: JwtPayload
+): Promise<IBooking | null> => {
+    const session = await mongoose.startSession();
+    let useTransaction = false;
+
+    try {
+        // Detect replica set once (you can also cache this in config instead of checking every time)
+        const mongoInfo = await mongoose.connection.db.admin().serverStatus();
+        if (mongoInfo.repl?.setName) {
+            useTransaction = true;
+            session.startTransaction();
+        }
+
+        // Fetch booking with its hotel in one go (reduce extra DB hit)
+        const existingBooking = await Booking.findById(bookingId).lean().session(session);
+
+        if (!existingBooking) {
+            throw new ApiError(StatusCodes.NOT_FOUND, "Booking not found");
+        }
+
+        const hotel = await Hotel.findById(existingBooking.hotelId).lean();
+        if (!hotel) {
+            throw new ApiError(StatusCodes.NOT_FOUND, "Associated hotel not found");
+        }
+
+        console.log({ userId: user.id })
+
+        // Authorization check
+        const isAuthorized =
+            hotel.hostId.toString() === user.id ||
+            user.role === USER_ROLES.ADMIN ||
+            user.role === USER_ROLES.SUPER_ADMIN;
+
+        console.log({ hotelId: hotel.hostId.toString(), usreId: user.id })
+
+        if (!isAuthorized) {
+            throw new ApiError(StatusCodes.FORBIDDEN, "You are not authorized to update this booking");
+        }
+
+        // Update booking directly
+        const updatedBooking = await Booking.findByIdAndUpdate(
+            bookingId,
+            { $set: booking },
+            { new: true, session }
+        ).populate({
+            path: "hotelId",
+            select: "-facilities -roomClosureDates -hotelRules -coordinates",
+        });
+
+        if (useTransaction) await session.commitTransaction();
+        return updatedBooking;
+    } catch (error) {
+        if (useTransaction) await session.abortTransaction();
+        throw error;
+    } finally {
+        session.endSession();
+    }
+};
+
+
 export const BookingService = {
     createBooking,
     getMyBooking,
     cencelBooking,
-    getALlHostBookings
+    getALlHostBookings,
+    getALlHostBookingsByAdmin,
+    updateBooking
 };

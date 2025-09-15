@@ -21,7 +21,7 @@ export type IHotel = {
         coordinates: [number, number]; // [lng, lat]
     };
     image?: string[];
-    facilities?: string[];
+    facilities?: mongoose.Types.ObjectId[];
     roomClosureDates?: Date[];
     hotelRules?: {
         title?: string;

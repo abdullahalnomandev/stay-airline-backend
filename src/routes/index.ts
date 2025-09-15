@@ -12,6 +12,8 @@ import { ReviewRoute } from '../app/modules/review/review.route';
 import { LegalDocumentRoutes } from '../app/modules/legalDocument/legalDocument.route';
 import { ContactCategoryRoute } from '../app/modules/contact/contactCategory/contactCategory.route';
 import { ContactInfoRoute } from '../app/modules/contact/contactInfo/contactInfo.route';
+import { FacilityRoutes } from '../app/modules/facilities/facilities.route';
+import { AnalyticsRoutes } from '../app/modules/analytics/analytics.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -66,6 +68,14 @@ const apiRoutes = [
   {
     path:'/contact-info',
     route:ContactInfoRoute
+  },
+  {
+    path:'/facilitiy',
+    route:FacilityRoutes
+  },
+  {
+    path:'/analytics',
+    route:AnalyticsRoutes
   }
 ];
 

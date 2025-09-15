@@ -23,7 +23,7 @@ router
 
 router.route('/:id')
     .get(
-        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.HOST),
+        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.HOST , USER_ROLES.GUEST),
         MessageController.getAllMessages
     );
 
