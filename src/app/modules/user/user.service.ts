@@ -12,6 +12,8 @@ import QueryBuilder from '../../builder/QueryBuilder';
 import { userSearchableField } from './user.constant';
 import { Hotel } from '../hotel/hotel.model';
 import { Booking } from '../booking/booking.model';
+import { Conversation } from '../conversation/conversation.model';
+import { Message } from '../message/message.model';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<{ message: string }> => {
   //set role
@@ -184,9 +186,18 @@ const deleteUserFromDB = async (
     unlinkFile(isExistUser.profilePic);
   }
 
-  // Delete associated hotels and bookings if they exist
   Hotel.deleteMany({ hostId: isExistUser._id });
   Booking.deleteMany({ userId: isExistUser._id });
+  Conversation.deleteMany({
+    $or: [{ creator: isExistUser._id }, { participant: isExistUser._id }],
+  });
+  Message.deleteMany({
+    $or: [
+      { sender: isExistUser._id },
+      { receiver: isExistUser._id },
+    ],
+  });
+
 
 
   const deletedUser = await User.findByIdAndDelete(userId);

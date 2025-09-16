@@ -111,7 +111,6 @@ const handleAirlinePersonVerificationRedirect = async (
 
         if (status === 'cancel') {
             await AirlinePersonVerification.findByIdAndDelete(airlinePersonVerificationId).session(session);
-            
             if (useTransaction) await session.commitTransaction();
             session.endSession();
 

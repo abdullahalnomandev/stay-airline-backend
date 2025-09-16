@@ -22,6 +22,7 @@ const fileUploadHandler = (fields?: { name: string; maxCount: number }[]) => {
   //create filename
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
+      console.log(file)
       let uploadDir;
       switch (file.fieldname) {
         case 'image':
@@ -62,7 +63,8 @@ const fileUploadHandler = (fields?: { name: string; maxCount: number }[]) => {
       if (
         file.mimetype === 'image/jpeg' ||
         file.mimetype === 'image/png' ||
-        file.mimetype === 'image/jpg'
+        file.mimetype === 'image/jpg' ||
+        file.mimetype === 'application/pdf'
       ) {
         cb(null, true);
       } else {

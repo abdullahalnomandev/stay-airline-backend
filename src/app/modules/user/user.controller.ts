@@ -59,7 +59,9 @@ const createNewUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
 
     const profilePic = getSingleFilePath(req.files, 'profilePic')
-    let images = getSingleFilePath(req.files, 'image');
+    let images = getMultipleFilesPath(req.files, 'image');
+
+    // console.log(images)
     const data = {
       images,
       profilePic,
