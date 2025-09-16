@@ -10,6 +10,7 @@ import config from "../../../config";
 import { USER_ROLES } from "../../../enums/user";
 import { getLatLongWithLocalRequest } from "./hotel.util";
 import { Review } from "../review/review.model";
+import { FavoriteHotel } from "../favoriteHotel/favorite.model";
 
 
 const createHotel = async (hotel: IHotel) => {
@@ -80,7 +81,7 @@ const updateHotel = async (hotelData: Partial<IHotel>, hotelId: string) => {
         }
     }
 
-    if(hotelData.status === HOTEL_STATUS.ACTIVE && !userExists?.stripeConnectedLink){
+    if (hotelData.status === HOTEL_STATUS.ACTIVE && !userExists?.stripeConnectedLink) {
         hotelData.status = HOTEL_STATUS.DRAFT
     }
 
@@ -141,7 +142,7 @@ const updateHotel = async (hotelData: Partial<IHotel>, hotelId: string) => {
 
 
 const getHotels = async (query: Record<string, unknown>) => {
-    const { lat, lng, km, roomType: type } = query;
+    const { lat, lng, km, roomType: type ,userId} = query;
 
     if (query.roomPrice) {
         query.roomPrice = { $lte: +query.roomPrice };
@@ -201,6 +202,13 @@ const getHotels = async (query: Record<string, unknown>) => {
         ])
     );
 
+    // ✅ Fetch user favorites
+    const favoriteHotels = await FavoriteHotel.find({
+        user: userId,
+    })
+
+    const favoriteSet = new Set(favoriteHotels.map(f => String(f.hotel)));
+
     // ✅ Attach stats to hotel results
     const hotelsWithStats = result.map(hotel => {
         const stats = statsMap.get(String(hotel._id as string)) || {
@@ -211,6 +219,8 @@ const getHotels = async (query: Record<string, unknown>) => {
             // @ts-ignore
             ...hotel.toObject(),
             ...stats,
+            isFavorite: favoriteSet.has(String(hotel._id))
+
         };
     });
 
@@ -222,7 +232,7 @@ const getHotels = async (query: Record<string, unknown>) => {
 
 const getSingleHotel = async (hotelId: string) => {
     const hotel = await Hotel.findById(hotelId).populate('facilities').lean();
-    
+
     if (!hotel) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'Hotel not found');
     }

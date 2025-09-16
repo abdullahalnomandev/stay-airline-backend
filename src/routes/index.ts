@@ -14,6 +14,7 @@ import { ContactCategoryRoute } from '../app/modules/contact/contactCategory/con
 import { ContactInfoRoute } from '../app/modules/contact/contactInfo/contactInfo.route';
 import { FacilityRoutes } from '../app/modules/facilities/facilities.route';
 import { AnalyticsRoutes } from '../app/modules/analytics/analytics.route';
+import { FavoriteHotelRoutes } from '../app/modules/favoriteHotel/favorite.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -76,6 +77,10 @@ const apiRoutes = [
   {
     path:'/analytics',
     route:AnalyticsRoutes
+  },
+  {
+    path:'/favourite',
+    route:FavoriteHotelRoutes
   }
 ];
 
