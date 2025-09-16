@@ -21,6 +21,20 @@ const addToFavorites = catchAsync(async (req: Request, res: Response, next: Next
 });
 
 
+const getAllFavoriteHotels = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user?.id;
+
+    const result = await FavoriteHotelService.getAllFavoriteHotels(req.query,user);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Favorite hotels retrieved successfully',
+        data: result
+    });
+});
+
+
 export const FavoriteHotelController = {
-    addToFavorites
+    addToFavorites,
+    getAllFavoriteHotels
 };

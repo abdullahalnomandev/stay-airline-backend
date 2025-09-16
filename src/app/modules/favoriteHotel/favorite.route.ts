@@ -11,4 +11,10 @@ router
     auth(USER_ROLES.GUEST, USER_ROLES.HOST ),
      FavoriteHotelController.addToFavorites
     )
+  .get(
+    auth(USER_ROLES.GUEST,USER_ROLES.HOST),
+    FavoriteHotelController.getAllFavoriteHotels
+  );
+
+
 export const FavoriteHotelRoutes = router;

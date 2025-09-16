@@ -15,7 +15,7 @@ const favoriteHotelSchema = new Schema<IFavoriteHotel>(
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: true
     }
   },
   { 
