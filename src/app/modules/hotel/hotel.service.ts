@@ -11,9 +11,11 @@ import { USER_ROLES } from "../../../enums/user";
 import { getLatLongWithLocalRequest } from "./hotel.util";
 import { Review } from "../review/review.model";
 import { FavoriteHotel } from "../favoriteHotel/favorite.model";
+import { Notification } from "../notification/notification.model";
 
 
 const createHotel = async (hotel: IHotel) => {
+
     const isUserExist = await User.findById(hotel.hostId);
     if (!isUserExist) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
@@ -24,7 +26,6 @@ const createHotel = async (hotel: IHotel) => {
         type: "Point",
         coordinates: [longitude, latitude] // [lng, lat] 
     }
-    console.log(hotel)
 
     if (!isUserExist?.connectedAccountId) {
         const stripe = new Stripe(config.stripe.secret_key as string);
@@ -54,10 +55,19 @@ const createHotel = async (hotel: IHotel) => {
         await User.findByIdAndUpdate(hotel.hostId, { connectedAccountId: account.id, role: USER_ROLES.HOST });
     }
     if (!isUserExist?.stripeConnectedLink) {
-        hotel.status = HOTEL_STATUS.DRAFT
+        hotel.status = HOTEL_STATUS.PENDING
     }
 
+
     const result = await Hotel.create(hotel);
+    const notificaiton = await Notification.create({
+        title: "New Hotel Listed",
+        message: `A new hotel "${result.name}" has been created`,
+        path: "/hotels",
+        refId: result._id
+    });
+    (global as any).io.emit("new_notificaiton", notificaiton)
+
     return result;
 };
 
@@ -142,7 +152,7 @@ const updateHotel = async (hotelData: Partial<IHotel>, hotelId: string) => {
 
 
 const getHotels = async (query: Record<string, unknown>) => {
-    const { lat, lng, km, roomType: type ,userId} = query;
+    const { lat, lng, km, roomType: type, userId } = query;
 
     if (query.roomPrice) {
         query.roomPrice = { $lte: +query.roomPrice };

@@ -16,6 +16,7 @@ import cryptoToken from '../../../util/cryptoToken';
 import generateOTP from '../../../util/generateOTP';
 import { User } from '../user/user.model';
 import { AirlinePersonVerification } from '../airlinePersonVerification/airlinePersonVerificaiton.model';
+import { USER_ROLES } from '../../../enums/user';
 
 //login
 const loginUserFromDB = async (payload: ILoginData) => {
@@ -35,7 +36,8 @@ const loginUserFromDB = async (payload: ILoginData) => {
   }
 
   const isUserVerified = await AirlinePersonVerification.findOne({email:payload.email,paymentStatus:'paid'});
-  if (!isUserVerified) {
+  
+  if (!isUserVerified && isExistUser.role !== USER_ROLES.ADMIN && isExistUser.role !== USER_ROLES.SUPER_ADMIN) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       'Please verify your airline account, then try to login again'
@@ -43,10 +45,10 @@ const loginUserFromDB = async (payload: ILoginData) => {
   }
 
   //check user status
-  if (isExistUser.status === 'delete') {
+  if (isExistUser.status === 'block') {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      'You don’t have permission to access this content.It looks like your account has been deactivated.'
+      'You don’t have permission to access this content.It looks like your account has been blocked.'
     );
   }
 

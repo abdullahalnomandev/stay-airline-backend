@@ -123,6 +123,8 @@ const updateUserToDB = async (
   payload: Partial<IUser>
 ): Promise<Partial<IUser | null>> => {
 
+  // console.log({userId,payload})
+
 
   const isExistUser = await User.isExistUserById(userId);
   if (!isExistUser) {
@@ -131,10 +133,13 @@ const updateUserToDB = async (
 
   //unlink file here
   if (payload) {
-    unlinkFiles(isExistUser.images);
-    unlinkFile(isExistUser.profilePic)
+    if (isExistUser.images && isExistUser.images.length > 0) {
+      unlinkFiles(isExistUser.images);
+    }
+    if (isExistUser.profilePic) {
+      unlinkFile(isExistUser.profilePic);
+    }
   }
-
   const updateDoc = await User.findOneAndUpdate({ _id: userId }, payload, {
     new: true,
   });
@@ -186,22 +191,15 @@ const deleteUserFromDB = async (
     unlinkFile(isExistUser.profilePic);
   }
 
-  Hotel.deleteMany({ hostId: isExistUser._id });
-  Booking.deleteMany({ userId: isExistUser._id });
-  Conversation.deleteMany({
-    $or: [{ creator: isExistUser._id }, { participant: isExistUser._id }],
-  });
-  Message.deleteMany({
-    $or: [
-      { sender: isExistUser._id },
-      { receiver: isExistUser._id },
-    ],
-  });
-
-
-
-  const deletedUser = await User.findByIdAndDelete(userId);
-  return deletedUser;
+  // Toggle user status between active and block
+  const newStatus = isExistUser.status === 'active' ? 'block' : 'active';
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { status: newStatus },
+    { new: true }
+  );
+  
+  return updatedUser;
 };
 
 export const UserService = {

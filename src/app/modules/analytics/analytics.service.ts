@@ -5,9 +5,9 @@ import { AirlinePersonVerification } from "../airlinePersonVerification/airlineP
 
 const getAnalytics = async (year: number) => {
     // Total counts
-    const totalUsers = await User.countDocuments({verified:true});
+    const totalUsers = await User.countDocuments({ verified: true });
     const totalBookings = await Booking.countDocuments({ paymentStatus: "paid" });
-    console.log({totalBookings})
+    console.log({ totalBookings })
     // Year range
     const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
     const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
@@ -62,31 +62,73 @@ const getAnalytics = async (year: number) => {
     let runningTotalUsers = usersBeforeYear; // start from previous years
     let runningTotalSubscriptions = 0;
 
-    const monthlyData = months.slice(0, lastMonth + 1).map((m, idx) => {
-        const monthNumber = idx + 1;
 
-        // Users
-        const userDoc = newUsersAgg.find((u) => u._id.month === monthNumber);
-        const newUsers = userDoc ? userDoc.count : 0;
-        runningTotalUsers += newUsers;
+    // MONTHLY EARNINGS (paid bookings of this year)...
+    const monthlyEarningsAgg = await Booking.aggregate([
+        {
+            $match: {
+                paymentStatus: "paid",
+                createdAt: { $gte: startDate, $lte: endDate }
+            }
+        },
+        {
+            $lookup: {
+                from: "hotels",
+                localField: "hotelId",
+                foreignField: "_id",
+                as: "hotel",
+            }
+        },
+        { $unwind: "$hotel" },
+        {
+            $group: {
+                _id: { month: { $month: "$createdAt" } },
+                earnings: { $sum: "$hotel.roomPrice" }
+            }
+        },
+        { $sort: { "_id.month": 1 } }
+    ]);
 
-        // Subscriptions
-        const subDoc = subscriptionsAgg.find((s) => s._id.month === monthNumber);
-        const newSubscriptions = subDoc ? subDoc.subscriptions : 0;
-        runningTotalSubscriptions += newSubscriptions;
+    const monthlyData = (() => {
+        let runningUsers = 0;
+        let runningSubscriptions = 0;
+        let runningEarnings = 0;
 
-        return {
-            month: m,
-            newUsers,
-            totalUsers: runningTotalUsers, // now includes previous years
-            newSubscriptions,
-            totalSubscriptions: runningTotalSubscriptions,
-        };
-    });
+        return months.slice(0, lastMonth + 1).map((m, idx) => {
+            const monthNumber = idx + 1;
+
+            // Users
+            const userDoc = newUsersAgg.find((u) => u._id.month === monthNumber);
+            const newUsers = userDoc ? userDoc.count : 0;
+            runningUsers += newUsers;
+
+            // Subscriptions
+            const subDoc = subscriptionsAgg.find((s) => s._id.month === monthNumber);
+            const newSubscriptions = subDoc ? subDoc.subscriptions : 0;
+            runningSubscriptions += newSubscriptions;
+
+            // Earnings
+            const earningDoc = monthlyEarningsAgg.find((e) => e._id.month === monthNumber);
+            const monthlyEarning = earningDoc ? earningDoc.earnings : 0;
+            runningEarnings += monthlyEarning;
+
+            return {
+                month: m,
+                newUsers,
+                totalUsers: runningUsers, // cumulative within the year
+                newSubscriptions,
+                totalSubscriptions: runningSubscriptions,
+                monthlyEarning,
+                totalEarning: runningEarnings
+            };
+        });
+    })();
+
+
 
     // Total earnings of all time
     const totalEarning = await Booking.aggregate([
-         {
+        {
             $match: {
                 paymentStatus: "paid"
             }
@@ -111,6 +153,8 @@ const getAnalytics = async (year: number) => {
     // Total subscriptions of all time
     const totalSubscriptions = await AirlinePersonVerification.countDocuments({ paymentStatus: "paid" });
 
+
+
     return {
         year,
         totalUsers,
@@ -126,3 +170,17 @@ export const AnalyticsServices = {
     getAnalytics,
 };
 
+
+// "year": 2025,
+//         "totalUsers": 12,
+//         "totalBookings": 2,
+//         "totalEarning": 1800,
+//         "totalSubscriptions": 8,
+//         "monthlyData": [
+//             {
+// "month": "Jan",
+// "newUsers": 0,
+// "totalUsers": 0,
+// "newSubscriptions": 0,
+// "totalSubscriptions": 0,
+// "monthlyEarning": 0

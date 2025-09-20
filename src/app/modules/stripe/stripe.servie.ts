@@ -22,7 +22,7 @@ const createAccountLink = async (userId: string) => {
     const accountLink = await stripe.accountLinks.create({
         account: user?.connectedAccountId as string,
         refresh_url: `${config.frontend_url}/billing?connectedAccountId=${user?.connectedAccountId}` as string,
-        return_url: `${config.frontend_url}/return` as string,
+        return_url: `${config.frontend_url}/return/${user?.connectedAccountId}` as string,
         type: "account_onboarding",
     });
     if (!accountLink) {

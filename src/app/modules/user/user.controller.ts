@@ -43,6 +43,7 @@ const updateProfile = catchAsync(
       profilePic,
       ...req.body,
     };
+    console.log(data)
     const result = await UserService.updateProfileToDB(user, data);
 
     sendResponse(res, {
@@ -84,11 +85,18 @@ const updateUser = catchAsync(
     const userId = req.user?.id;
     let images = getMultipleFilesPath(req.files, 'image');
     let profilePic = getSingleFilePath(req.files,'profilePic')
+
+    const {name, email , contact, address } = req.body;
     const data = {
       images,
       profilePic,
-      ...req.body,
+      name,
+      email,
+      contact,
+      address
+
     };
+    console.log(data)
     const result = await UserService.updateUserToDB(userId, data);
 
     sendResponse(res, {

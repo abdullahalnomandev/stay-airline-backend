@@ -15,6 +15,7 @@ import { ContactInfoRoute } from '../app/modules/contact/contactInfo/contactInfo
 import { FacilityRoutes } from '../app/modules/facilities/facilities.route';
 import { AnalyticsRoutes } from '../app/modules/analytics/analytics.route';
 import { FavoriteHotelRoutes } from '../app/modules/favoriteHotel/favorite.route';
+import { NotificationRoute } from '../app/modules/notification/notification.route';
 const router = express.Router();
 
 const apiRoutes = [
@@ -81,6 +82,10 @@ const apiRoutes = [
   {
     path:'/favourite',
     route:FavoriteHotelRoutes
+  },
+  {
+    path:'/notificaiton',
+    route:NotificationRoute
   }
 ];
 

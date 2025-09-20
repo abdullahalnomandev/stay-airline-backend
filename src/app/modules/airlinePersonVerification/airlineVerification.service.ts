@@ -9,6 +9,7 @@ import { airlinePersonVerificationSearchableFields } from "./airlineVerification
 import { IairlinePersonVerification } from "./airlineVerification.interface";
 import Stripe from 'stripe';
 import mongoose from "mongoose";
+import { Notification } from "../notification/notification.model";
 
 const stripe = new Stripe(config.stripe.secret_key as string, {
     apiVersion: '2025-08-27.basil',
@@ -30,7 +31,7 @@ const createairlinePersonVerification = async (
         }
 
         // Check if user exists
-        const userEmailExist = await User.findOne({email:airlinePersonVerification.email}).session(session);
+        const userEmailExist = await User.findOne({ email: airlinePersonVerification.email }).session(session);
         if (!userEmailExist) throw new ApiError(404, 'User email not correct');
         // airlinePersonVerification.email = userExist.email;
 
@@ -92,16 +93,23 @@ const handleAirlinePersonVerificationRedirect = async (
         }
 
         if (status === 'success') {
-            await AirlinePersonVerification.findByIdAndUpdate(
-                airlinePersonVerificationId, 
+           const subscirpton =  await AirlinePersonVerification.findByIdAndUpdate(
+                airlinePersonVerificationId,
                 { paymentStatus: 'paid' },
                 { session }
             );
             await User.updateOne(
-                { _id: userId }, 
+                { _id: userId },
                 { airlinePersonVerification: airlinePersonVerificationId },
                 { session }
             );
+            const notification = await Notification.create({
+                title: "New Subscription Created",
+                message: "A new subscription has been successfully created",
+                path: "/verification-plan",
+                refId: subscirpton?._id
+            });
+            (global as any).io.emit("new_notificaiton", notification)
 
             if (useTransaction) await session.commitTransaction();
             session.endSession();
@@ -119,7 +127,7 @@ const handleAirlinePersonVerificationRedirect = async (
 
         if (useTransaction) await session.abortTransaction();
         session.endSession();
-        
+
         // If status unknown
         return res.status(400).json({ message: 'Invalid payment status' });
     } catch (error) {

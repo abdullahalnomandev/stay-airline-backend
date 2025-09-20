@@ -8,6 +8,8 @@ const createVerificationPlan = async (verificationPlan: IVerificationPlan) => {
 };
 
 const getVerificationPlans = async (query: Record<string, unknown>) => {
+
+    query.active = true;
     const verificationPlanQuery = new QueryBuilder(VerificationPlan.find(), query)
         .paginate()
         .search(verificationPlanSearchableFields)

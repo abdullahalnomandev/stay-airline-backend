@@ -8,10 +8,11 @@ export const enum AVAILABILITY_STATUS {
     CLOSED = 'closed'
 }
 export const hotelSearchableFields = ['address']
-export const hotelStatus = ['draft', 'active', 'inactive'];
 export const enum HOTEL_STATUS {
     DRAFT = 'draft',
     ACTIVE = 'active',
-    INACTIVE = 'inactive'
+    INACTIVE = 'inactive',
+    PENDING = 'pending'
 }
 
+export const hotelStatus = [HOTEL_STATUS.DRAFT, HOTEL_STATUS.ACTIVE, HOTEL_STATUS.INACTIVE, HOTEL_STATUS.PENDING];

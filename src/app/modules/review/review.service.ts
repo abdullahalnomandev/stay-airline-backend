@@ -65,6 +65,16 @@ const getSingleReview = async (id: string): Promise<IReview | null> => {
 
     return review;
 };
+const getAllReviewsByAdmin = async (): Promise<IReview[]> => {
+    const reviews = await Review.find()
+        .populate('user', 'name email')
+
+    if (!reviews.length) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'No reviews found');
+    }
+
+    return reviews;
+};
 const getReviewsByHotel = async (query: Record<string, any>, hotelId: string) => {
     // Add hotel filter to query
     query.hotel = hotelId;
@@ -76,7 +86,7 @@ const getReviewsByHotel = async (query: Record<string, any>, hotelId: string) =>
 
 
     const pagination = await reviewQuery.getPaginationInfo();
-    const data = await reviewQuery.modelQuery.populate('user','_id name image images').lean();
+    const data = await reviewQuery.modelQuery.populate('user','_id name image profilePic').lean();
 
     return {
         pagination,
@@ -87,6 +97,7 @@ const getReviewsByHotel = async (query: Record<string, any>, hotelId: string) =>
 
 
 const updateReview = async (id: string, payload: Partial<IReview>, userId: string): Promise<IReview | null> => {
+
     // Check if review exists
     const review = await Review.findById(id);
     if (!review) {
@@ -129,11 +140,30 @@ const deleteReview = async (id: string, userId: string): Promise<IReview | null>
     return deletedReview;
 };
 
+const updateStatus = async (reviewId: string): Promise<IReview | null> => {
+    // Check if review exists
+    const review = await Review.findById(reviewId);
+    if (!review) {
+        throw new ApiError(StatusCodes.NOT_FOUND, 'Review not found');
+    }
+
+    // Toggle the isVisible status
+    const updatedReview = await Review.findByIdAndUpdate(
+        reviewId,
+        { isVisible: !review.isVisible },
+        { new: true }
+    );
+
+    return updatedReview;
+};
+
 export const ReviewService = {
     createReview,
     getSingleReview,
     getReviewsByHotel,
     getAllReviews,
     updateReview,
-    deleteReview
+    deleteReview,
+    getAllReviewsByAdmin,
+    updateStatus
 }

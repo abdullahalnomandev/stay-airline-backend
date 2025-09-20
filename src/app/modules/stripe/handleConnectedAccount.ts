@@ -4,6 +4,7 @@ import stripe from '../../../config/stripe';
 import { logger } from '../../../shared/logger';
 import { User } from '../user/user.model';
 import { Hotel } from '../hotel/hotel.model';
+import { HOTEL_STATUS } from '../hotel/hotel.constant';
 
 export const handleConnectedAccount = async (data: Stripe.Account) => {
 
@@ -37,7 +38,7 @@ export const handleConnectedAccount = async (data: Stripe.Account) => {
         if (existingUser?._id) {
             await Hotel.updateMany(
                 { hostId: existingUser._id },
-                { status: 'active' }
+                { status: HOTEL_STATUS.ACTIVE }
             );
         }
     }

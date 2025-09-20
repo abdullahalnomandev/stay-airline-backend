@@ -14,7 +14,7 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     profilePic: {
       type: String,
-      default: null
+      default: 'https://i.ibb.co/z5YHLV9/profile.png',
     },
     isVerifiedHost: {
       type: Boolean,
@@ -57,7 +57,7 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     status: {
       type: String,
-      enum: ['active', 'delete'],
+      enum: ['active', 'block'],
       default: 'active',
     },
     role: {

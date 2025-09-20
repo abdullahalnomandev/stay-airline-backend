@@ -16,7 +16,7 @@ export type IUser = {
   dateOfBirth:Date;
   images: string[];
   profilePic:string;
-  status: 'active' | 'delete';
+  status: 'active' | 'block';
   verified: boolean;
   authentication?: {
     isResetPassword: boolean;

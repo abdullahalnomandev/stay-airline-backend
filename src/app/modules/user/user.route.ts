@@ -36,11 +36,10 @@ router
       return UserController.createNewUser(req, res, next);
     }
   )
-  .get(
-    // auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
-    (req: Request, res: Response, next: NextFunction) => {
+  .get((req: Request, res: Response, next: NextFunction) => {
       return UserController.getAllUsers(req, res, next);
-    }).patch(
+    })
+    .patch(
       fileUploadHandler(),
       auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN , USER_ROLES.HOST , USER_ROLES.GUEST),
       (req: Request, res: Response, next: NextFunction) => {
@@ -50,7 +49,7 @@ router
 
 router
   .route('/:id')
-  .delete(
+  .patch(
     auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
     (req: Request, res: Response, next: NextFunction) => {
       return UserController.deleteSingleUserFromDB(req, res, next);

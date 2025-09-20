@@ -22,6 +22,21 @@ router
     ReviewController.getAllReviews);
 
 router
+  .route('/status/:id')
+  .patch(
+    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    (req: Request, res: Response, next: NextFunction) => {
+      return ReviewController.updateStatus(req, res, next);
+    }
+  )
+
+router
+  .route('/admin')
+  .get(
+    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    ReviewController.getAllReviewByAdmin);
+
+router
   .route('/hotel/:hotelId')
   .get(ReviewController.getReviewsByHotel);
 

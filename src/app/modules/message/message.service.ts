@@ -10,13 +10,7 @@ const sendMessage = async (message: IMessage) => {
   await newMessage.populate('sender', 'name _id');
 
   // Update conversation with the new message ID
-  await Conversation.updateOne(
-    {
-      $or: [
-        { creator: message.sender, participant: message.receiver },
-        { creator: message.receiver, participant: message.sender },
-      ],
-    },
+  await Conversation.findByIdAndUpdate(message.conversation,
     {
       lastMessage: newMessage._id,
       updatedAt: new Date()
@@ -35,14 +29,14 @@ const getAllMessages = async (query: Record<string, any>, userId: string, conver
 
   const result = new QueryBuilder(Message.find({
     conversation: conversationId
-  }), query).paginate();
+  }), query).paginate()
 
   const data = await result.modelQuery
     .populate({
       path: populateField,
       select: 'name _id',
       model: 'User'
-    })
+    }).sort({createdAt:-1})
 
   const pagination = await result.getPaginationInfo();
 
