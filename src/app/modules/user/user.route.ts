@@ -55,4 +55,12 @@ router
       return UserController.deleteSingleUserFromDB(req, res, next);
     })
 
+router
+  .route('/verify/:id')
+  .patch(
+    auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+    (req: Request, res: Response, next: NextFunction) => {
+      return UserController.verifiyHost(req, res, next);
+    })
+
 export const UserRoutes = router;

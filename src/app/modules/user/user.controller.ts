@@ -130,11 +130,23 @@ const deleteSingleUserFromDB = catchAsync(async (req: Request, res: Response) =>
   });
 });
 
+const verifiyHost = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.verifyHost(req.params.id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Users verifyed successfully',
+    data: result,
+  });
+});
+
 export const UserController = {
   updateUser,
   getUserProfile,
   updateProfile,
   createNewUser,
   getAllUsers,
-  deleteSingleUserFromDB
+  deleteSingleUserFromDB,
+  verifiyHost
 };

@@ -1,3 +1,4 @@
+import { Socket } from 'socket.io';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { Conversation } from '../conversation/conversation.model';
 import { Message } from '../message/message.model';
@@ -16,8 +17,10 @@ const sendMessage = async (message: IMessage) => {
       updatedAt: new Date()
     }
   );
+  const io =(global as any).io
 
-  (global as any).io.emit(`new_message::${message.conversation}`, newMessage)
+  io.emit(`new_message::${newMessage.conversation}`, newMessage)
+  io.emit(`new_user::${newMessage.receiver}`, newMessage)
 
   return newMessage;
 };

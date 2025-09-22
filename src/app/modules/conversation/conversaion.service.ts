@@ -49,6 +49,12 @@ const createConversation = async ({
   conversation.lastMessage = newMessage._id;
   await conversation.save();
 
+
+  const io = (global as any).io
+  io.emit(`new_message::${newMessage.conversation}`, newMessage)
+  io.emit(`new_user::${newMessage.receiver}`, newMessage)
+
+
   // 5️⃣ Populate lastMessage
   await conversation.populate({
     path: 'lastMessage',
@@ -66,6 +72,7 @@ const getAllConversaions = async (query: Record<string, any>, userId: string) =>
   const populateField = isParticipant ? 'participant' : 'creator';
 
   const search = query.searchTerm || "";
+  query.sort = '-updatedAt';
 
   const result = new QueryBuilder(
     Conversation.find({
@@ -91,7 +98,6 @@ const getAllConversaions = async (query: Record<string, any>, userId: string) =>
 
   const data = await modelQuery;
   const pagination = await result.getPaginationInfo();
-
   // ⚠️ Important: filter out conversations where populate returned null
   const filteredData = data.filter((conv: any) => conv[populateField] !== null);
 

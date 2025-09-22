@@ -202,6 +202,33 @@ const deleteUserFromDB = async (
   return updatedUser;
 };
 
+const verifyHost = async (
+  userId: string
+): Promise<Partial<IUser | null>> => {
+  const isExistUser = await User.isExistUserById(userId);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  //unlink file here
+  if (isExistUser.logo) {
+    unlinkFiles(isExistUser.logo);
+  }
+  if (isExistUser.profilePic) {
+    unlinkFile(isExistUser.profilePic);
+  }
+
+  // Toggle isVerifiedHost between true and false
+  const newVerificationStatus = isExistUser.isVerifiedHost ? false : true;
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { isVerifiedHost: newVerificationStatus },
+    { new: true }
+  );
+  
+  return updatedUser;
+};
+
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
@@ -209,5 +236,6 @@ export const UserService = {
   createNewUserToDB,
   getAllUsers,
   updateUserToDB,
-  deleteUserFromDB
+  deleteUserFromDB,
+  verifyHost
 }; createNewUserToDB
