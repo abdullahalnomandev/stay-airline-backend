@@ -10,10 +10,6 @@ import { IUser } from './user.interface';
 import { User } from './user.model';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { userSearchableField } from './user.constant';
-import { Hotel } from '../hotel/hotel.model';
-import { Booking } from '../booking/booking.model';
-import { Conversation } from '../conversation/conversation.model';
-import { Message } from '../message/message.model';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<{ message: string }> => {
   //set role
@@ -229,6 +225,35 @@ const verifyHost = async (
   return updatedUser;
 };
 
+const getAllHost = async (query: Record<string, any>) => {
+
+  query.role = 'host';
+  const result = new QueryBuilder(User.find(), query)
+    .paginate()
+    .search(userSearchableField)
+    .fields()
+    .filter()
+    .sort();
+
+  const data = await result.modelQuery
+    .populate({
+      path: "airlineVerification",
+      match: { paymentStatus: "paid" },
+      select: "designation employeeId",
+      // populate: {
+      //   path: "plan",
+      //   select: "-active",
+      // },
+    })
+    .lean();
+
+  const pagination = await result.getPaginationInfo();
+
+  return {
+    pagination,
+    data,
+  };
+};
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
@@ -237,5 +262,6 @@ export const UserService = {
   getAllUsers,
   updateUserToDB,
   deleteUserFromDB,
-  verifyHost
+  verifyHost,
+  getAllHost
 }; createNewUserToDB

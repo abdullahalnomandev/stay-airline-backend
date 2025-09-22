@@ -254,8 +254,6 @@ const resendOtpToDB = async (email: string) => {
   //set role
   const registedUser = await User.findOne({email},'email verified').lean()
 
-  console.log({email})
-
   if(registedUser?.verified){
     throw new ApiError(StatusCodes.BAD_REQUEST, 'User already verified');
   }

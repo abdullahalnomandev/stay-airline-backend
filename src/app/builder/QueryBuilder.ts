@@ -11,7 +11,6 @@ class QueryBuilder<T> {
 
   //searching
   search(searchableFields: string[]) {
-    console.log({searchableFields})
     if (this?.query?.searchTerm) {
       this.modelQuery = this.modelQuery.find({
         $or: searchableFields.map(

@@ -16,7 +16,7 @@ router
 router
   .route('/admin')
   .get(
-    // auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
     BookingController.getALlHostBookingsByAdmin)
 router
   .route('/webhook/:id')

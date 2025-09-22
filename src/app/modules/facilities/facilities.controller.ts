@@ -12,7 +12,6 @@ const createFacility = catchAsync(
       logo,
       ...req.body,
     };
-    console.log(data)
     const result = await FacilityService.createFacilityToDB(data);
 
     sendResponse(res, {

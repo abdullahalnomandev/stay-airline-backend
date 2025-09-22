@@ -9,14 +9,14 @@ const router = express.Router();
 router
     .route('/')
     .post(
-        // auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
         (req, res, next) => {
             req.body = LegalDocumentValidation.createLegalDocumentZodSchema.parse(req.body);
             return LegalDocumentController.createLegalDocument(req, res, next);
         }
     )
     .get(
-        // auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
         LegalDocumentController.getAllLegalDocuments
     );
 
@@ -27,7 +27,7 @@ router
         LegalDocumentController.getSingleLegalDocument
     )
     .patch(
-        // auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
         (req, res, next) => {
             req.body = LegalDocumentValidation.updateLegalDocumentZodSchema.parse(req.body);
             return LegalDocumentController.updateLegalDocument(req, res, next);

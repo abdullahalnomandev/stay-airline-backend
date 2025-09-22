@@ -8,16 +8,17 @@ import QueryBuilder from "../../builder/QueryBuilder";
 
 const getAllNotifications = async (query: Record<string, unknown>, userId: string) => {
     // Add user filter to query
-    query.user = userId;
+    // query.user = userId;
 
     const notificationQuery = new QueryBuilder(Notification.find(), query)
         .filter()
+        .sort()
         .paginate();
 
     const result = await notificationQuery.modelQuery;
     const pagination = await notificationQuery.getPaginationInfo();
 
-    const unreadNotificationCount = await Notification.find({seen:false})
+    const unreadNotificationCount = await Notification.countDocuments({ seen: false })
 
     return {
         pagination,
@@ -53,7 +54,7 @@ const deleteNotification = async (notificaitonId: string, userId: string): Promi
     const notification = await Notification.findById(notificaitonId);
     if (!notification) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'Notification not found');
-    }  
+    }
 
     // Delete the notification
     const deletedNotification = await Notification.findByIdAndDelete(notificaitonId);
@@ -66,20 +67,30 @@ const updateStatus = async (userId: string, notificaitonId: string): Promise<INo
     if (!notification) {
         throw new ApiError(StatusCodes.NOT_FOUND, 'Notification not found');
     }
-    console.log(notification)
     // Mark notification as seen
-    const updatedNotification = await Notification.findByIdAndUpdate (
+    const updatedNotification = await Notification.findByIdAndUpdate(
         notification._id,
-        { seen: true, receiver:userId },
+        { seen: true, receiver: userId },
         { new: true }
     );
 
     return updatedNotification;
 };
 
+const seenAll = async (userId: string) => {
+    // Mark notification as seen
+    await Notification.updateMany(
+        { seen: false },
+        { seen: true, receiver: userId },
+        { new: true }
+    );
+
+};
+
 export const NotificationService = {
     getNotificationsByUser,
     getAllNotifications,
     deleteNotification,
-    updateStatus
+    updateStatus,
+    seenAll
 }

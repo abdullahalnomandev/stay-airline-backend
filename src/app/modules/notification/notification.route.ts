@@ -18,6 +18,13 @@ router
     auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.HOST),
     NotificationController.markAsSeen
   );
+
+  router
+  .route('/read-all')
+  .patch(
+    auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.HOST),
+    NotificationController.seenAll
+  );
   
 router
   .route('/:id')

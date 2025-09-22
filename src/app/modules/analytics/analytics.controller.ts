@@ -17,6 +17,21 @@ const getAnalytics = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getAnalyticsHoseWise = catchAsync(async (req: Request, res: Response) => {
+
+    const year = Number(req.params?.year) || new Date().getFullYear()
+    const hostId = req.params?.hostId;
+    const result = await AnalyticsServices.getAnalyticsHoseWise(year,hostId);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Hostwise Analytics retrieved successfully',
+        data: result,
+    });
+});
+
 export const analyticsController = {
     getAnalytics,
+    getAnalyticsHoseWise,
 };

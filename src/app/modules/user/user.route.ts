@@ -25,6 +25,12 @@ router
   );
 
 router
+  .route('/host')
+  .get(
+    // auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    UserController.getAllHost)
+
+router
   .route('/')
   .post(fileUploadHandler(),
     (req: Request, res: Response, next: NextFunction) => {

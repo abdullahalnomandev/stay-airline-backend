@@ -43,7 +43,6 @@ const updateProfile = catchAsync(
       profilePic,
       ...req.body,
     };
-    console.log(data)
     const result = await UserService.updateProfileToDB(user, data);
 
     sendResponse(res, {
@@ -62,7 +61,6 @@ const createNewUser = catchAsync(
     const profilePic = getSingleFilePath(req.files, 'profilePic')
     let images = getMultipleFilesPath(req.files, 'image');
 
-    // console.log(images)
     const data = {
       images,
       profilePic,
@@ -96,7 +94,6 @@ const updateUser = catchAsync(
       address
 
     };
-    console.log(data)
     const result = await UserService.updateUserToDB(userId, data);
 
     sendResponse(res, {
@@ -141,6 +138,17 @@ const verifiyHost = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllHost = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.getAllHost(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Hosts retrieved successfully',
+    data: result,
+  });
+});
+
 export const UserController = {
   updateUser,
   getUserProfile,
@@ -148,5 +156,6 @@ export const UserController = {
   createNewUser,
   getAllUsers,
   deleteSingleUserFromDB,
-  verifiyHost
+  verifiyHost,
+  getAllHost
 };

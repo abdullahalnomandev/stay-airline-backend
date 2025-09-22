@@ -57,9 +57,22 @@ const markAsSeen = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const seenAll = catchAsync(async (req: Request, res: Response) => {
+    const id = req.user.id;
+    const result = await NotificationService.seenAll(id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Notification marked as seen successfully',
+        data: result
+    });
+});
+
 export const NotificationController = {
     getUserNotifications,
     getAllNotifications,
     deleteNotification,
-    markAsSeen
+    markAsSeen,
+    seenAll
 };

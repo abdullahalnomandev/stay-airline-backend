@@ -1,13 +1,13 @@
 import { User } from "../user/user.model";
 import { Booking } from "../booking/booking.model";
 import { AirlinePersonVerification } from "../airlinePersonVerification/airlinePersonVerificaiton.model";
+import { Hotel } from "../hotel/hotel.model";
 
 
 const getAnalytics = async (year: number) => {
     // Total counts
     const totalUsers = await User.countDocuments({ verified: true });
     const totalBookings = await Booking.countDocuments({ paymentStatus: "paid" });
-    console.log({ totalBookings })
     // Year range
     const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
     const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
@@ -23,9 +23,6 @@ const getAnalytics = async (year: number) => {
         },
         { $sort: { "_id.month": 1 } },
     ]);
-
-    // USERS created before this year (for running total)
-    const usersBeforeYear = await User.countDocuments({ createdAt: { $lt: startDate } });
 
     // SUBSCRIPTIONS (successful payments)
     const subscriptionsAgg = await AirlinePersonVerification.aggregate([
@@ -57,10 +54,6 @@ const getAnalytics = async (year: number) => {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const now = new Date();
     const lastMonth = year === now.getFullYear() ? now.getMonth() : 11;
-
-    // Running totals per month
-    let runningTotalUsers = usersBeforeYear; // start from previous years
-    let runningTotalSubscriptions = 0;
 
 
     // MONTHLY EARNINGS (paid bookings of this year)...
@@ -166,21 +159,116 @@ const getAnalytics = async (year: number) => {
 };
 
 
-export const AnalyticsServices = {
-    getAnalytics,
+const getAnalyticsHoseWise = async (year: number, hostId: string) => {
+
+    // Total counts
+    const hotels = await Hotel.find({ hostId }).lean();
+    if (!hotels.length) {
+        throw new Error('No hotels found for this host');
+    }
+    const hotelIds = hotels.map(hotel => hotel._id);
+    const totalBookings = await Booking.countDocuments({
+        paymentStatus: "paid",
+        hotelId: { $in: hotelIds }
+    });
+
+    // Year range
+    const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
+    const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
+
+
+    // Month names
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const now = new Date();
+    const lastMonth = year === now.getFullYear() ? now.getMonth() : 11;
+
+
+    // MONTHLY EARNINGS (paid bookings of this year)...
+    const monthlyEarningsAgg = await Booking.aggregate([
+        {
+            $match: {
+                paymentStatus: "paid",
+                createdAt: { $gte: startDate, $lte: endDate },
+                hotelId: { $in: hotelIds }
+            }
+        },
+        {
+            $lookup: {
+                from: "hotels",
+                localField: "hotelId",
+                foreignField: "_id",
+                as: "hotel",
+            }
+        },
+        { $unwind: "$hotel" },
+        {
+            $group: {
+                _id: { month: { $month: "$createdAt" } },
+                earnings: { $sum: "$hotel.roomPrice" }
+            }
+        },
+        { $sort: { "_id.month": 1 } }
+    ]);
+
+    const monthlyData = (() => {
+        let runningSubscriptions = 0;
+        let runningEarnings = 0;
+
+        return months.slice(0, lastMonth + 1).map((m, idx) => {
+            const monthNumber = idx + 1;
+
+            // Earnings
+            const earningDoc = monthlyEarningsAgg.find((e) => e._id.month === monthNumber);
+            const monthlyEarning = earningDoc ? earningDoc.earnings : 0;
+            runningEarnings += monthlyEarning;
+
+            return {
+                month: m,
+                totalSubscriptions: runningSubscriptions,
+                monthlyEarning,
+                totalEarning: runningEarnings
+            };
+        });
+    })();
+
+
+
+    // Total earnings of all time
+    const totalEarning = await Booking.aggregate([
+        {
+            $match: {
+                paymentStatus: "paid",
+                hotelId: { $in: hotelIds }
+            }
+        },
+        {
+            $lookup: {
+                from: "hotels",
+                localField: "hotelId",
+                foreignField: "_id",
+                as: "hotel",
+            }
+        },
+        { $unwind: "$hotel" },
+        {
+            $group: {
+                _id: null,
+                earnings: { $sum: "$hotel.roomPrice" }
+            }
+        }
+    ]).then(res => (res[0]?.earnings ?? 0));
+
+
+    return {
+        year,
+        totalBookings,
+        totalEarning,
+        monthlyData,
+    };
 };
 
 
-// "year": 2025,
-//         "totalUsers": 12,
-//         "totalBookings": 2,
-//         "totalEarning": 1800,
-//         "totalSubscriptions": 8,
-//         "monthlyData": [
-//             {
-// "month": "Jan",
-// "newUsers": 0,
-// "totalUsers": 0,
-// "newSubscriptions": 0,
-// "totalSubscriptions": 0,
-// "monthlyEarning": 0
+export const AnalyticsServices = {
+    getAnalytics,
+    getAnalyticsHoseWise
+};
