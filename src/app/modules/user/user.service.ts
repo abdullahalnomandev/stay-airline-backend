@@ -66,14 +66,18 @@ const updateProfileToDB = async (
   payload: Partial<IUser>
 ): Promise<Partial<IUser | null>> => {
   const { id } = user;
-  const isExistUser = await User.isExistUserById(id);
+  const isExistUser = await User.findById(id);
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
   //unlink file here
   if (payload.images) {
-    unlinkFile(isExistUser.image);
+    unlinkFiles(isExistUser.images);
+  }
+
+  if (payload.profilePic) {
+    unlinkFile(isExistUser.profilePic);
   }
 
   const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
